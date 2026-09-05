@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if q %}Kết quả tìm kiếm: "{{ q }}" — DevBlog{% else %}Tìm kiếm — DevBlog{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="search-results-page fade-in">
+
+  <!-- ── Search Header ── -->
+  <div class="search-results-header">
+    <a href="{{ url_for('index') }}" class="post-back">← Về trang chủ</a>
+
+    <div class="search-hero">
+      <div class="search-hero-icon">🔍</div>
+      <div>
+        {% if q %}
+          <h1 class="search-hero-title">
+            Kết quả cho <span class="search-query-highlight">"{{ q }}"</span>
+          </h1>
+          <p class="search-hero-meta">
+            Tìm thấy <strong>{{ total }}</strong> bài viết phù hợp
+          </p>
+        {% else %}
+          <h1 class="search-hero-title">Tìm kiếm bài viết</h1>
+          <p class="search-hero-meta">Nhập từ khóa để tìm kiếm trong toàn bộ bài viết</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Search form lớn trên trang kết quả -->
+    <form action="{{ url_for('search') }}" method="GET" class="search-page-form" id="search-page-form" role="search">
+      <div class="search-page-input-wrapper">
+        <span class="search-page-icon">🔍</span>
+        <input
+          type="search"
+          name="q"
+          id="search-page-input"
+          class="search-page-input"
+          placeholder="Tìm kiếm tiêu đề, nội dung, mô tả..."
+          autocomplete="off"
+          value="{{ q }}"
+          autofocus
+        />
+        {% if q %}
+          <a href="{{ url_for('search') }}" class="search-page-clear" title="Xóa tìm kiếm">✕</a>
+        {% endif %}
+      </div>
+      <button type="submit" class="btn btn-primary" id="search-submit-btn">Tìm kiếm</button>
+    </form>
+  </div>
+
+  <!-- ── Results Grid ── -->
+  {% if q %}
+    {% if results %}
+      <div class="posts-grid stagger">
+        {% for post in results %}
+          <div
+            class="post-card {% if post.get_cover_image() %}post-card-has-cover{% endif %}"
+            data-post-url="{{ url_for('post_detail', post_id=post.id) }}"
+            role="article"
+            tabindex="0"
+            aria-label="{{ post.title }}"
+          >
+            {% if post.get_cover_image() %}
+              <div class="card-cover-img-wrapper">
+                <img
+                  src="{{ post.get_cover_image() }}"
+                  alt="{{ post.title }}"
+                  class="card-cover-img"
+                  style="object-position: {{ post.get_cover_position() }};"
+                  loading="lazy"
+                  onerror="this.closest('.card-cover-img-wrapper').style.display='none'"
+                />
+              </div>
+            {% endif %}
+
+            <div class="card-meta">
+              <div class="card-tags-group">
+                {% if post.tags %}
+                  {% for tag in post.tags[:3] %}
+                    <a href="{{ url_for('tag_posts', slug=tag.slug) }}" class="card-tag-pill">
+                      🏷️ {{ tag.name }}
+                    </a>
+                  {% endfor %}
+                {% else %}
+                  <span class="card-category">{{ post.category }}</span>
+                {% endif %}
+              </div>
+              <span class="card-date">{{ post.short_date() }}</span>
+            </div>
+
+            <h3 class="card-title">
+              <a href="{{ url_for('post_detail', post_id=post.id) }}" class="card-title-link">
+                {{ post.title }}
+              </a>
+            </h3>
+
+            <p class="card-summary">{{ post.summary }}</p>
+
+            <div class="card-footer">
+              {% if post.author %}
+                <a href="{{ url_for('user_profile', username=post.author.username) }}" class="card-author-link">
+                  <img src="{{ post.author.get_avatar() }}" alt="{{ post.author.username }}" class="author-avatar-xs" />
+                  <span class="author-name">{{ post.author.username }}</span>
+                </a>
+              {% else %}
+                <span class="author-name text-muted">DevBlog</span>
+              {% endif %}
+              <div class="card-footer-right">
+                <span class="card-read-time">🕐 {{ post.read_time }} phút</span>
+                <span class="search-match-badge">
+                  ❤️ {{ post.like_count() }} • 💬 {{ post.comment_count() }}
+                </span>
+                <a href="{{ url_for('post_detail', post_id=post.id) }}" class="card-arrow">→</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+
+    {% else %}
+      <!-- No results -->
+      <div class="empty-state fade-in">
+        <span class="empty-icon">🔍</span>
+        <h3>Không tìm thấy kết quả nào</h3>
+        <p>
+          Không có bài viết nào khớp với từ khóa <strong>"{{ q }}"</strong>.
+          Hãy thử lại với từ khóa khác hoặc xem tất cả bài viết.
+        </p>
+        <div style="display:flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
+          <a href="{{ url_for('index') }}" class="btn btn-primary">← Xem tất cả bài viết</a>
+          <button onclick="document.getElementById('search-page-input').value='';document.getElementById('search-page-input').focus();" class="btn btn-ghost">
+            🔄 Tìm kiếm lại
+          </button>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+</div>
+{% endblock %}

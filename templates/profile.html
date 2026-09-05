@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ user.username }} — Trang cá nhân | DevBlog{% endblock %}
+
+{% block content %}
+<div class="profile-page fade-in">
+
+  <!-- ── Breadcrumb ── -->
+  <a href="{{ url_for('index') }}" class="post-back">
+    ← Về trang chủ
+  </a>
+
+  <!-- ── PROFILE HERO CARD ── -->
+  <section class="profile-hero-card">
+    <div class="profile-hero-bg"></div>
+
+    <div class="profile-hero-content">
+      <!-- Avatar with Glow -->
+      <div class="profile-avatar-container">
+        <img src="{{ user.get_avatar() }}" alt="{{ user.username }}" class="profile-avatar-img" />
+        <span class="profile-status-dot" title="Đang hoạt động"></span>
+      </div>
+
+      <!-- User Main Info -->
+      <div class="profile-info-main">
+        <div class="profile-title-row">
+          <h1 class="profile-username">{{ user.username }}</h1>
+          <span class="profile-badge">✦ Thành viên DevBlog</span>
+        </div>
+
+        {% if user.bio %}
+          <p class="profile-bio">{{ user.bio }}</p>
+        {% else %}
+          <p class="profile-bio profile-bio-empty">Chưa có lời giới thiệu.</p>
+        {% endif %}
+
+        <div class="profile-meta-row">
+          <span class="profile-meta-item">
+            <span>📅</span> Tham gia: <strong>{{ user.short_joined_date() }}</strong>
+          </span>
+          <span class="profile-meta-item">
+            <span>📧</span> {{ user.email }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="profile-actions">
+        {% if current_user.is_authenticated and current_user.id == user.id %}
+          <a href="{{ url_for('profile_edit') }}" class="btn btn-ghost" id="edit-profile-btn">
+            <span>⚙️</span> Sửa hồ sơ
+          </a>
+          <a href="{{ url_for('post_new') }}" class="btn btn-primary" id="profile-new-post-btn">
+            <span>✏️</span> Viết bài
+          </a>
+        {% elif current_user.is_authenticated %}
+          <button
+            type="button"
+            class="btn-follow-action btn-follow-profile {% if is_following %}following{% endif %}"
+            id="profile-follow-btn"
+            data-username="{{ user.username }}"
+            data-following="{{ 'true' if is_following else 'false' }}"
+            title="{% if is_following %}Hủy theo dõi{% else %}Theo dõi tác giả{% endif %}"
+          >
+            <span class="follow-icon">{% if is_following %}✓{% else %}＋{% endif %}</span>
+            <span class="follow-text">{% if is_following %}Đang theo dõi{% else %}Theo dõi tác giả{% endif %}</span>
+          </button>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="btn-follow-action btn-follow-profile" title="Đăng nhập để theo dõi">
+            <span class="follow-icon">＋</span>
+            <span class="follow-text">Theo dõi tác giả</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="profile-stats-bar">
+      <div class="profile-stat-box">
+        <span class="profile-stat-num">{{ posts|length }}</span>
+        <span class="profile-stat-text">Bài viết</span>
+      </div>
+      <div class="profile-stat-divider"></div>
+      <div class="profile-stat-box">
+        <span class="profile-stat-num" id="profile-followers-count">{{ followers_count }}</span>
+        <span class="profile-stat-text">Người theo dõi</span>
+      </div>
+      <div class="profile-stat-divider"></div>
+      <div class="profile-stat-box">
+        <span class="profile-stat-num" id="profile-following-count">{{ following_count }}</span>
+        <span class="profile-stat-text">Đang theo dõi</span>
+      </div>
+      <div class="profile-stat-divider"></div>
+      <div class="profile-stat-box">
+        <span class="profile-stat-num">{{ total_reading_time }}</span>
+        <span class="profile-stat-text">Phút đọc</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PROFILE TABS ── -->
+  <section class="user-posts-section">
+    <div class="profile-tabs-nav" role="tablist">
+      <a
+        href="{{ url_for('user_profile', username=user.username, tab='posts') }}"
+        class="profile-tab-btn {% if active_tab != 'saved' %}active{% endif %}"
+        role="tab"
+        id="tab-posts"
+      >
+        📝 Bài viết <span class="tab-count">{{ posts|length }}</span>
+      </a>
+      {% if current_user.is_authenticated and current_user.id == user.id %}
+        <a
+          href="{{ url_for('user_profile', username=user.username, tab='saved') }}"
+          class="profile-tab-btn {% if active_tab == 'saved' %}active{% endif %}"
+          role="tab"
+          id="tab-saved"
+        >
+          🔖 Đã lưu <span class="tab-count">{{ saved_posts|length }}</span>
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- ── POSTS TAB ── -->
+    {% if active_tab != 'saved' %}
+      <div class="posts-grid stagger" id="tab-panel-posts" role="tabpanel">
+        {% if posts %}
+          {% for post in posts %}
+            <div
+              class="post-card {% if post.get_cover_image() %}post-card-has-cover{% endif %}"
+              data-post-url="{{ url_for('post_detail', post_id=post.id) }}"
+              role="article"
+              tabindex="0"
+              aria-label="{{ post.title }}"
+            >
+              {% if post.get_cover_image() %}
+                <div class="card-cover-img-wrapper">
+                  <img
+                    src="{{ post.get_cover_image() }}"
+                    alt="{{ post.title }}"
+                    class="card-cover-img"
+                    style="object-position: {{ post.get_cover_position() }};"
+                    loading="lazy"
+                    onerror="this.closest('.card-cover-img-wrapper').style.display='none'"
+                  />
+                </div>
+              {% endif %}
+
+              <div class="card-meta">
+                <div class="card-tags-group">
+                  {% if post.tags %}
+                    {% for tag in post.tags %}
+                      <a href="{{ url_for('tag_posts', slug=tag.slug) }}" class="card-tag-pill" title="Lọc theo tag {{ tag.name }}">
+                        🏷️ {{ tag.name }}
+                      </a>
+                    {% endfor %}
+                  {% else %}
+                    <span class="card-category">{{ post.category }}</span>
+                  {% endif %}
+                </div>
+                <span class="card-date">{{ post.short_date() }}</span>
+              </div>
+              <h3 class="card-title">
+                <a href="{{ url_for('post_detail', post_id=post.id) }}" class="card-title-link">{{ post.title }}</a>
+              </h3>
+              <p class="card-summary">{{ post.summary }}</p>
+
+              <div class="card-engagement-row">
+                <button
+                  class="card-like-btn {% if post.is_liked_by(current_user) %}liked{% endif %}"
+                  id="like-btn-{{ post.id }}"
+                  data-post-id="{{ post.id }}"
+                  data-liked="{{ 'true' if post.is_liked_by(current_user) else 'false' }}"
+                  title="Thích bài viết"
+                  type="button"
+                >
+                  <span class="like-heart">❤️</span>
+                  <span class="like-count" id="like-count-{{ post.id }}">{{ post.like_count() }}</span>
+                </button>
+
+                <a href="{{ url_for('post_detail', post_id=post.id) }}#comments-section" class="card-comment-link" title="Xem bình luận">
+                  <span>💬</span>
+                  <span>{{ post.comment_count() }}</span>
+                </a>
+
+                {% if current_user.is_authenticated %}
+                  <button
+                    type="button"
+                    class="card-bookmark-btn {% if current_user.is_bookmarked(post) %}bookmarked{% endif %}"
+                    id="bookmark-btn-{{ post.id }}"
+                    data-post-id="{{ post.id }}"
+                    data-bookmarked="{{ 'true' if current_user.is_bookmarked(post) else 'false' }}"
+                    title="{% if current_user.is_bookmarked(post) %}Bỏ lưu{% else %}Lưu bài{% endif %}"
+                  >
+                    <span>🔖</span>
+                  </button>
+                {% endif %}
+              </div>
+
+              <div class="card-footer">
+                <span class="card-read-time">🕐 {{ post.read_time }} phút đọc</span>
+                <a href="{{ url_for('post_detail', post_id=post.id) }}" class="card-arrow" title="Đọc bài viết">→</a>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state">
+            <span class="empty-icon">📭</span>
+            <h3>Chưa có bài viết nào</h3>
+            <p>
+              {% if current_user.is_authenticated and current_user.id == user.id %}
+                Bạn chưa xuất bản bài viết nào. Hãy bắt đầu chia sẻ câu chuyện của bạn ngay!
+              {% else %}
+                Tác giả <strong>{{ user.username }}</strong> chưa đăng bài viết nào.
+              {% endif %}
+            </p>
+            {% if current_user.is_authenticated and current_user.id == user.id %}
+              <a href="{{ url_for('post_new') }}" class="btn btn-primary btn-lg">
+                ✏️ Viết bài đầu tiên
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+    <!-- ── SAVED POSTS TAB ── -->
+    {% else %}
+      <div class="posts-grid stagger" id="tab-panel-saved" role="tabpanel">
+        {% if saved_posts %}
+          {% for post in saved_posts %}
+            <div
+              class="post-card"
+              data-post-url="{{ url_for('post_detail', post_id=post.id) }}"
+              role="article"
+              tabindex="0"
+              aria-label="{{ post.title }}"
+            >
+              {% if post.get_cover_image() %}
+                <div class="card-cover-thumbnail">
+                  <img src="{{ post.get_cover_image() }}" alt="{{ post.title }}" style="object-position: {{ post.get_cover_position() }};" loading="lazy" />
+                </div>
+              {% endif %}
+              <div class="card-meta">
+                <div class="card-tags-group">
+                  {% if post.tags %}
+                    {% for tag in post.tags %}
+                      <a href="{{ url_for('tag_posts', slug=tag.slug) }}" class="card-tag-pill">
+                        🏷️ {{ tag.name }}
+                      </a>
+                    {% endfor %}
+                  {% else %}
+                    <span class="card-category">{{ post.category }}</span>
+                  {% endif %}
+                </div>
+                <span class="card-date">{{ post.short_date() }}</span>
+              </div>
+              <h3 class="card-title">
+                <a href="{{ url_for('post_detail', post_id=post.id) }}" class="card-title-link">{{ post.title }}</a>
+              </h3>
+              <p class="card-summary">{{ post.summary }}</p>
+
+              <div class="card-engagement-row">
+                <span class="card-author-chip">
+                  {% if post.author %}
+                    <img src="{{ post.author.get_avatar() }}" alt="{{ post.author.username }}" class="card-author-avatar" />
+                    <a href="{{ url_for('user_profile', username=post.author.username) }}">{{ post.author.username }}</a>
+                  {% endif %}
+                </span>
+
+                <button
+                  type="button"
+                  class="card-bookmark-btn bookmarked"
+                  id="bookmark-btn-{{ post.id }}"
+                  data-post-id="{{ post.id }}"
+                  data-bookmarked="true"
+                  title="Bỏ lưu bài viết này"
+                >
+                  <span>🔖</span>
+                </button>
+              </div>
+
+              <div class="card-footer">
+                <span class="card-read-time">🕐 {{ post.read_time }} phút đọc</span>
+                <a href="{{ url_for('post_detail', post_id=post.id) }}" class="card-arrow" title="Đọc bài viết">→</a>
+              </div>
+            </div>
+          {% endfor %}
+
+        {% else %}
+          <div class="empty-state">
+            <span class="empty-icon">🔖</span>
+            <h3>Chưa có bài viết nào được lưu</h3>
+            <p>Khám phá blog và nhấn nút 🔖 để lưu những bài viết yêu thích của bạn!</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+              🌐 Khám phá bài viết
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+  </section>
+
+</div>
+{% endblock %}

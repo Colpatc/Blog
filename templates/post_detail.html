@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }} — DevBlog{% endblock %}
+
+{% block content %}
+<!-- ── READING PROGRESS BAR ── -->
+<div class="reading-progress-bar" id="reading-progress-bar" aria-hidden="true"></div>
+
+<article class="post-detail-page fade-in {% if post.get_cover_image() %}has-hero-cover{% endif %}">
+
+
+  <!-- ── CINEMATIC HERO COVER BANNER ── -->
+  {% if post.get_cover_image() %}
+  <div class="post-hero-cinematic">
+    <!-- Background Image -->
+    <img src="{{ post.get_cover_image() }}" alt="{{ post.title }}" class="post-hero-cinematic-bg"
+      style="object-position: {{ post.get_cover_position() }};" />
+    <!-- Rich Multi-layer Gradient Overlay -->
+    <div class="post-hero-cinematic-overlay"></div>
+
+    <!-- Content over Hero -->
+    <div class="post-hero-cinematic-content">
+      <a href="{{ url_for('index') }}" class="post-back-pill">
+        ← Về trang chủ
+      </a>
+
+      <div class="post-tags-header">
+        {% if post.tags %}
+        {% for tag in post.tags %}
+        <a href="{{ url_for('tag_posts', slug=tag.slug) }}" class="post-category-badge"
+          title="Xem tất cả bài viết chủ đề {{ tag.name }}">
+          🏷️ {{ tag.name }}
+        </a>
+        {% endfor %}
+        {% else %}
+        <span class="post-category-badge">📁 {{ post.category }}</span>
+        {% endif %}
+      </div>
+
+      <h1 class="post-title post-title-hero">{{ post.title }}</h1>
+
+      <div class="post-meta-row post-meta-hero">
+        <!-- Author info link -->
+        {% if post.author %}
+        <a href="{{ url_for('user_profile', username=post.author.username) }}"
+          class="post-author-chip post-author-chip-hero" title="Xem hồ sơ tác giả">
+          <img src="{{ post.author.get_avatar() }}" alt="{{ post.author.username }}" class="author-avatar-sm" />
+          <span class="author-name-text"><strong>{{ post.author.username }}</strong></span>
+        </a>
+        {% endif %}
+
+        <span class="meta-item">📅 <strong>{{ post.short_date() }}</strong></span>
+        <span class="meta-item">🕐 <strong>{{ post.read_time }} phút đọc</strong></span>
+
+        {% if post.was_edited() %}
+        <span class="meta-item meta-edited">✏️ Đã chỉnh sửa</span>
+        {% endif %}
+
+        <!-- Actions (Only available to post owner) -->
+        {% if current_user.is_authenticated and post.user_id and current_user.id == post.user_id %}
+        <div class="post-actions">
+          <a href="{{ url_for('post_edit', post_id=post.id) }}" class="btn btn-ghost btn-sm" id="edit-post-btn">
+            ✏️ Sửa bài
+          </a>
+          <a href="{{ url_for('post_delete', post_id=post.id) }}" class="btn btn-danger btn-sm" id="delete-post-btn">
+            🗑️ Xóa
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- ── STANDARD HEADER (Khi không có ảnh bìa) ── -->
+  <a href="{{ url_for('index') }}" class="post-back">
+    ← Về trang chủ
+  </a>
+
+  <header class="post-header">
+    <div class="post-tags-header">
+      {% if post.tags %}
+      {% for tag in post.tags %}
+      <a href="{{ url_for('tag_posts', slug=tag.slug) }}" class="post-category-badge"
+        title="Xem tất cả bài viết chủ đề {{ tag.name }}">
+        🏷️ {{ tag.name }}
+      </a>
+      {% endfor %}
+      {% else %}
+      <span class="post-category-badge">📁 {{ post.category }}</span>
+      {% endif %}
+    </div>
+    <h1 class="post-title">{{ post.title }}</h1>
+
+    <div class="post-meta-row">
+      <!-- Author info link -->
+      {% if post.author %}
+      <a href="{{ url_for('user_profile', username=post.author.username) }}" class="post-author-chip"
+        title="Xem hồ sơ tác giả">
+        <img src="{{ post.author.get_avatar() }}" alt="{{ post.author.username }}" class="author-avatar-sm" />
+        <span class="author-name-text"><strong>{{ post.author.username }}</strong></span>
+      </a>
+      {% endif %}
+
+      <span class="meta-item">📅 <strong>{{ post.short_date() }}</strong></span>
+      <span class="meta-item">🕐 <strong>{{ post.read_time }} phút đọc</strong></span>
+
+      {% if post.was_edited() %}
+      <span class="meta-item meta-edited">✏️ Đã chỉnh sửa</span>
+      {% endif %}
+
+      <!-- Actions (Only available to post owner) -->
+      {% if current_user.is_authenticated and post.user_id and current_user.id == post.user_id %}
+      <div class="post-actions">
+        <a href="{{ url_for('post_edit', post_id=post.id) }}" class="btn btn-ghost btn-sm" id="edit-post-btn">
+          ✏️ Sửa bài
+        </a>
+        <form method="POST" action="{{ url_for('post_delete', post_id=post.id) }}" class="post-delete-form"
+          onsubmit="return confirm('Bạn có chắc muốn xóa bài viết này?')">
+          {{ csrf_token() }}
+          <button type="submit" class="btn btn-danger btn-sm" id="delete-post-btn">
+            🗑️ Xóa
+          </button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+  {% endif %}
+
+  {# Cache values used more than once to avoid repeated DB queries during rendering. #}
+  {% set post_like_count = post.like_count() %}
+  {% set post_comment_count = post.comment_count() %}
+  {% set post_followers_count = post.author.followers_count() if post.author else 0 %}
+  {% if current_user.is_authenticated and post.author and current_user.id != post.author.id %}
+  {% set post_is_following = current_user.is_following(post.author) %}
+  {% else %}
+  {% set post_is_following = false %}
+  {% endif %}
+  {% if current_user.is_authenticated %}
+  {% set post_is_bookmarked = current_user.is_bookmarked(post) %}
+  {% else %}
+  {% set post_is_bookmarked = false %}
+  {% endif %}
+
+  <!-- ── POST BODY CONTAINER ── -->
+  <div class="post-body-container">
+    <!-- ── Summary ── -->
+    <blockquote class="post-summary-block">
+      {{ post.summary }}
+    </blockquote>
+
+
+    <!-- ── Table of Contents (auto-generated by JS) ── -->
+    <div class="post-toc-wrapper" id="post-toc-wrapper" aria-label="Mục lục bài viết" style="display:none">
+      <div class="toc-header">
+        <span class="toc-icon">📋</span>
+        <strong class="toc-title">Mục Lục Bài Viết</strong>
+        <button type="button" class="toc-toggle-btn" id="toc-toggle-btn" aria-expanded="true" aria-controls="toc-nav"
+          title="Thu gọn mục lục">
+          ▲
+        </button>
+      </div>
+      <nav class="toc-nav" id="toc-nav"></nav>
+    </div>
+
+    <!-- ── Content ── -->
+    <div class="post-content" id="post-content">
+      {{ post.content | markdown | safe }}
+    </div>
+
+    <!-- ── Engagement Bar (Like + Comments count + Social Share) ── -->
+    <div class="engagement-bar">
+      <div class="engagement-left">
+        <button class="like-btn {% if user_liked %}liked{% endif %}" id="like-btn-{{ post.id }}"
+          data-post-id="{{ post.id }}" data-liked="{{ 'true' if user_liked else 'false' }}"
+          title="{% if user_liked %}Bỏ thích{% else %}Thích bài viết này{% endif %}" type="button">
+          <span class="like-heart">❤️</span>
+          <span class="like-count" id="like-count-{{ post.id }}">{{ post_like_count }}</span>
+          <span class="like-label">{% if user_liked %}Đã thích{% else %}Thích{% endif %}</span>
+        </button>
+
+        <a href="#comments-section" class="comment-jump-btn" title="Đi tới bình luận">
+          <span>💬</span>
+          <span id="comment-count-display">{{ post_comment_count }}</span>
+          <span>bình luận</span>
+        </a>
+
+        <!-- ── Bookmark Button ── -->
+        {% if current_user.is_authenticated %}
+        <button type="button" class="bookmark-btn {% if post_is_bookmarked %}bookmarked{% endif %}"
+          id="bookmark-btn-{{ post.id }}" data-post-id="{{ post.id }}"
+          data-bookmarked="{{ 'true' if post_is_bookmarked else 'false' }}"
+          title="{% if current_user.is_bookmarked(post) %}Bỏ lưu bài này{% else %}Lưu bài viết này{% endif %}">
+          <span class="bookmark-icon">🔖</span>
+          <span class="bookmark-label">{% if current_user.is_bookmarked(post) %}Đã lưu{% else %}Lưu bài{% endif
+            %}</span>
+        </button>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="bookmark-btn" title="Đăng nhập để lưu bài">
+          <span class="bookmark-icon">🔖</span>
+          <span class="bookmark-label">Lưu bài</span>
+        </a>
+        {% endif %}
+      </div>
+
+      <!-- Social Share Buttons -->
+      <div class="social-share-group">
+        <span class="share-label">Chia sẻ:</span>
+
+        <!-- Facebook -->
+        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url | urlencode }}" target="_blank"
+          rel="noopener noreferrer" class="share-btn share-facebook" title="Chia sẻ lên Facebook">
+          <span>f</span>
+        </a>
+
+        <!-- X (Twitter) -->
+        <a href="https://twitter.com/intent/tweet?text={{ post.title | urlencode }}&url={{ request.url | urlencode }}&via=DevBlog"
+          target="_blank" rel="noopener noreferrer" class="share-btn share-twitter" title="Chia sẻ lên X (Twitter)">
+          <span>𝕏</span>
+        </a>
+
+        <!-- LinkedIn -->
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url | urlencode }}" target="_blank"
+          rel="noopener noreferrer" class="share-btn share-linkedin" title="Chia sẻ lên LinkedIn">
+          <span>in</span>
+        </a>
+
+        <!-- Copy Link Button -->
+        <button type="button" class="share-btn share-copy btn-copy-link" data-url="{{ request.url }}"
+          title="Sao chép liên kết bài viết">
+          <span>🔗</span>
+          <span class="copy-text">Copy link</span>
+        </button>
+      </div>
+    </div>
+
+
+    <!-- ── Author Profile Card at Bottom ── -->
+    {% if post.author %}
+    <section class="post-author-box">
+      <div class="author-box-avatar">
+        <img src="{{ post.author.get_avatar() }}" alt="{{ post.author.username }}" class="author-avatar-md" />
+      </div>
+      <div class="author-box-info">
+        <div class="author-box-top-row">
+          <div>
+            <span class="author-box-label">Tác giả bài viết</span>
+            <h3 class="author-box-name">
+              <a href="{{ url_for('user_profile', username=post.author.username) }}">{{ post.author.username }}</a>
+            </h3>
+          </div>
+          {% if current_user.is_authenticated and current_user.id != post.author.id %}
+          <button type="button" class="btn-follow-action {% if post_is_following %}following{% endif %}"
+            data-username="{{ post.author.username }}" data-following="{{ 'true' if post_is_following else 'false' }}"
+            title="Theo dõi tác giả">
+            <span class="follow-icon">{% if post_is_following %}✓{% else %}＋{% endif %}</span>
+            <span class="follow-text">{% if post_is_following %}Đang theo dõi{% else %}Theo dõi{% endif %}</span>
+          </button>
+          {% elif not current_user.is_authenticated %}
+          <a href="{{ url_for('login') }}" class="btn-follow-action" title="Đăng nhập để theo dõi">
+            <span class="follow-icon">＋</span>
+            <span class="follow-text">Theo dõi</span>
+          </a>
+          {% endif %}
+        </div>
+        <p class="author-box-bio">
+          {{ post.author.bio or 'Thành viên cộng đồng DevBlog 🚀' }}
+        </p>
+        <div class="author-box-footer-row">
+          <span class="author-box-followers" id="author-followers-count-{{ post.author.username }}">
+            👥 {{ post_followers_count }} người theo dõi
+          </span>
+          <a href="{{ url_for('user_profile', username=post.author.username) }}" class="author-box-link">
+            Xem tất cả bài viết của {{ post.author.username }} →
+          </a>
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- ══════════════════════════════════════ -->
+    <!--          KHU VỰC BÌNH LUẬN             -->
+    <!-- ══════════════════════════════════════ -->
+    <section class="comments-section" id="comments-section">
+      <div class="comments-header">
+        <h2 class="comments-title">
+          💬 Bình luận
+          <span class="comments-count-badge">{{ post_comment_count }}</span>
+        </h2>
+      </div>
+
+      <!-- Form gửi bình luận -->
+      {% if current_user.is_authenticated %}
+      <div class="comment-form-wrapper">
+        <div class="comment-form-avatar">
+          <img src="{{ current_user.get_avatar() }}" alt="{{ current_user.username }}" class="author-avatar-sm" />
+        </div>
+        <form method="POST" action="{{ url_for('comment_add', post_id=post.id) }}" class="comment-form"
+          id="comment-form">
+          {{ comment_form.hidden_tag() }}
+          <div class="comment-input-group">
+            {{ comment_form.content(
+            class='comment-textarea',
+            id='comment-content',
+            placeholder='Chia sẻ suy nghĩ hoặc đặt câu hỏi của bạn về bài viết này...',
+            rows=3
+            ) }}
+            {% for error in comment_form.content.errors %}
+            <p class="field-error">⚠️ {{ error }}</p>
+            {% endfor %}
+          </div>
+          <div class="comment-form-footer">
+            <span class="comment-as-text">Đang bình luận với tư cách <strong>{{ current_user.username }}</strong></span>
+            <button type="submit" class="btn btn-primary btn-sm comment-submit-btn" id="comment-submit-btn">
+              ✉️ Gửi bình luận
+            </button>
+          </div>
+        </form>
+      </div>
+      {% else %}
+      <!-- Hộp mời đăng nhập -->
+      <div class="comment-login-prompt">
+        <span class="comment-login-icon">💬</span>
+        <div class="comment-login-text">
+          <strong>Tham gia cuộc trò chuyện!</strong>
+          <p>Đăng nhập để để lại bình luận và tương tác cùng cộng đồng tác giả.</p>
+        </div>
+        <a href="{{ url_for('login', next=request.path) }}" class="btn btn-primary btn-sm">
+          🔑 Đăng nhập ngay
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- Danh sách bình luận -->
+      <div class="comments-list" id="comments-list">
+        {% if comments %}
+        {% for comment in comments %}
+        <div class="comment-item" id="comment-{{ comment.id }}">
+          <div class="comment-avatar">
+            <a href="{{ url_for('user_profile', username=comment.author.username) }}"
+              title="{{ comment.author.username }}">
+              <img src="{{ comment.author.get_avatar() }}" alt="{{ comment.author.username }}"
+                class="author-avatar-sm" />
+            </a>
+          </div>
+          <div class="comment-body">
+            <div class="comment-meta">
+              <a href="{{ url_for('user_profile', username=comment.author.username) }}" class="comment-author-name">
+                {{ comment.author.username }}
+              </a>
+              {% if post.author and comment.user_id == post.author.id %}
+              <span class="comment-author-badge">✦ Tác giả</span>
+              {% endif %}
+              <span class="comment-date">{{ comment.formatted_date() }}</span>
+            </div>
+            <div class="comment-content">
+              {{ comment.content }}
+            </div>
+            {% if current_user.is_authenticated and (current_user.id == comment.user_id or (post.user_id and
+            current_user.id == post.user_id)) %}
+            <form method="POST" action="{{ url_for('comment_delete', comment_id=comment.id) }}"
+              class="comment-delete-form" onsubmit="return confirm('Bạn có chắc muốn xóa bình luận này?')">
+              {{ comment_form.hidden_tag() }}
+              <button type="submit" class="comment-delete-btn" title="Xóa bình luận">🗑️ Xóa</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="comments-empty">
+          <span class="empty-icon">💭</span>
+          <p>Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ suy nghĩ!</p>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+  </div><!-- /post-body-container -->
+
+</article>
+{% endblock %}

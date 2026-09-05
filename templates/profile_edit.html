@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Chỉnh sửa hồ sơ — DevBlog{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper fade-in">
+  <div class="auth-card edit-profile-card">
+
+    <a href="{{ url_for('user_profile', username=current_user.username) }}" class="post-back" style="margin-bottom: 1.5rem; display: inline-flex;">
+      ← Quay lại trang cá nhân
+    </a>
+
+    <div class="auth-header">
+      <div class="auth-icon-badge">⚙️</div>
+      <h1 class="auth-title">Chỉnh sửa hồ sơ</h1>
+      <p class="auth-subtitle">Cập nhật ảnh đại diện, tên hiển thị và giới thiệu bản thân</p>
+    </div>
+
+    <!-- Live Avatar Preview Area -->
+    <div class="avatar-edit-preview-section">
+      <div class="avatar-preview-wrapper">
+        <img id="avatar-preview-img" src="{{ current_user.get_avatar() }}" alt="Avatar Preview" class="avatar-preview-img" />
+      </div>
+
+      <!-- Avatar Source Selector -->
+      <div class="avatar-source-options">
+        <label for="avatar_file_input" class="btn btn-outline btn-sm avatar-upload-btn">
+          📁 Tải ảnh từ máy
+        </label>
+        <input type="file" id="avatar_file_input" name="avatar_file_hidden" accept="image/*" style="display:none;" />
+      </div>
+
+      <div class="avatar-preset-picker">
+        <span class="preset-label">🎨 Hoặc chọn nhanh mẫu Avatar (DiceBear):</span>
+        <div class="preset-buttons">
+          <button type="button" class="preset-btn" onclick="selectPreset('bottts')">🤖 Robot</button>
+          <button type="button" class="preset-btn" onclick="selectPreset('adventurer')">🧙 Nhân vật</button>
+          <button type="button" class="preset-btn" onclick="selectPreset('lorelei')">🌸 Anime</button>
+          <button type="button" class="preset-btn" onclick="selectPreset('thumbs')">👍 Thumbs</button>
+          <button type="button" class="preset-btn" onclick="selectPreset('fun-emoji')">😄 Emoji</button>
+        </div>
+      </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('profile_edit') }}" enctype="multipart/form-data" class="auth-form" id="profile-form" novalidate>
+      {{ form.hidden_tag() }}
+      <input type="file" id="avatar_file" name="avatar_file" accept="image/*" style="display:none;" />
+
+      <div class="form-group">
+        <label for="{{ form.username.id }}" class="form-label">
+          <span>👤</span> Tên người dùng (Username)
+        </label>
+        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), id="username-input") }}
+        {% for error in form.username.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.avatar.id }}" class="form-label">
+          <span>🔗</span> Hoặc dán URL Ảnh đại diện trực tiếp
+        </label>
+        {{ form.avatar(class="form-control" + (" is-invalid" if form.avatar.errors else ""), id="avatar-input", placeholder="https://... hoặc để trống để tạo tự động", oninput="updateAvatarPreview(this.value)") }}
+        <span class="field-hint">Bạn có thể tải ảnh từ máy, dán URL trực tiếp hoặc bấm các mẫu hoạt hình phía trên.</span>
+        {% for error in form.avatar.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.bio.id }}" class="form-label">
+          <span>📝</span> Giới thiệu bản thân (Bio)
+        </label>
+        {{ form.bio(class="form-control" + (" is-invalid" if form.bio.errors else ""), rows="4", placeholder="Viết đôi dòng về kinh nghiệm, sở thích hoặc đam mê công nghệ của bạn...") }}
+        {% for error in form.bio.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-actions-row">
+        <a href="{{ url_for('user_profile', username=current_user.username) }}" class="btn btn-ghost">
+          Hủy bỏ
+        </a>
+        {{ form.submit(class="btn btn-primary btn-lg") }}
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+  const avatarFileInput = document.getElementById('avatar_file_input');
+  const avatarFileForm = document.getElementById('avatar_file');
+  const avatarPreviewImg = document.getElementById('avatar-preview-img');
+  const avatarUrlInput = document.getElementById('avatar-input');
+
+  avatarFileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      avatarFileForm.files = e.target.files;
+      avatarUrlInput.value = '';
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        avatarPreviewImg.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  function updateAvatarPreview(url) {
+    const username = document.getElementById('username-input').value || 'user';
+    avatarFileForm.value = '';
+    if (url && url.trim().length > 0) {
+      avatarPreviewImg.src = url.trim();
+    } else {
+      avatarPreviewImg.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username)}&backgroundColor=7c6af7,22d3ee`;
+    }
+  }
+
+  function selectPreset(style) {
+    const username = document.getElementById('username-input').value || '{{ current_user.username }}';
+    const newUrl = `https://api.dicebear.com/7.x/${style}/svg?seed=${encodeURIComponent(username)}`;
+    avatarUrlInput.value = newUrl;
+    updateAvatarPreview(newUrl);
+  }
+</script>
+{% endblock %}

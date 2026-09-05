@@ -1,0 +1,425 @@
+{% extends 'base.html' %}
+
+{% block title %}Trang Quản Trị Hệ Thống (Admin Dashboard) — DevBlog{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-page fade-in">
+
+  <!-- ── Header Banner ── -->
+  <div class="admin-header-banner">
+    <div class="admin-badge">
+      <span>🛡️</span> Phân Hệ Quản Trị Cấp Cao
+    </div>
+    <div class="admin-header-row">
+      <div>
+        <h1 class="admin-title">Admin Dashboard &amp; Phân Quyền</h1>
+        <p class="admin-subtitle">
+          Giám sát hoạt động toàn diện, kiểm duyệt nội dung, xử lý bình luận spam và quản lý tài khoản thành viên.
+        </p>
+      </div>
+      <div class="admin-header-user">
+        <span class="admin-role-badge">👑 Super Admin: <strong>{{ current_user.username }}</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KPI Metrics Cards ── -->
+  <div class="admin-kpi-grid">
+    <div class="kpi-card kpi-card-purple">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-info">
+        <span class="kpi-value" id="kpi-total-users">{{ total_users }}</span>
+        <span class="kpi-label">Tổng thành viên</span>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-card-red">
+      <div class="kpi-icon">🚫</div>
+      <div class="kpi-info">
+        <span class="kpi-value" id="kpi-banned-users">{{ banned_users }}</span>
+        <span class="kpi-label">Tài khoản bị khóa</span>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-card-cyan">
+      <div class="kpi-icon">📝</div>
+      <div class="kpi-info">
+        <span class="kpi-value" id="kpi-total-posts">{{ total_posts }}</span>
+        <span class="kpi-label">Tổng bài viết</span>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-card-green">
+      <div class="kpi-icon">💬</div>
+      <div class="kpi-info">
+        <span class="kpi-value" id="kpi-total-comments">{{ total_comments }}</span>
+        <span class="kpi-label">Tổng bình luận</span>
+      </div>
+    </div>
+
+    <div class="kpi-card kpi-card-amber">
+      <div class="kpi-icon">❤️</div>
+      <div class="kpi-info">
+        <span class="kpi-value">{{ total_likes }}</span>
+        <span class="kpi-label">Lượt thả tim</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Navigation Tabs ── -->
+  <div class="admin-tabs-nav" role="tablist">
+    <a
+      href="{{ url_for('admin_dashboard', tab='overview') }}"
+      class="admin-tab-btn {% if active_tab == 'overview' %}active{% endif %}"
+    >
+      <span>📊</span> Tổng quan
+    </a>
+    <a
+      href="{{ url_for('admin_dashboard', tab='users') }}"
+      class="admin-tab-btn {% if active_tab == 'users' %}active{% endif %}"
+    >
+      <span>👥</span> Quản lý Người dùng ({{ users|length }})
+    </a>
+    <a
+      href="{{ url_for('admin_dashboard', tab='comments') }}"
+      class="admin-tab-btn {% if active_tab == 'comments' %}active{% endif %}"
+    >
+      <span>💬</span> Bình luận &amp; Spam ({{ recent_comments|length }})
+    </a>
+    <a
+      href="{{ url_for('admin_dashboard', tab='posts') }}"
+      class="admin-tab-btn {% if active_tab == 'posts' %}active{% endif %}"
+    >
+      <span>📝</span> Quản lý Bài viết ({{ recent_posts|length }})
+    </a>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- TAB 1: TỔNG QUAN (OVERVIEW)            -->
+  <!-- ══════════════════════════════════════ -->
+  {% if active_tab == 'overview' %}
+    <div class="admin-tab-pane fade-in">
+      <div class="overview-two-col">
+        
+        <!-- Left: Quick Moderation Alert -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><span>⚡</span> Hoạt động Quản trị Nhanh</h3>
+            <span class="card-badge">Trực quan</span>
+          </div>
+          <div class="admin-card-body">
+            <p class="text-secondary">
+              Hệ thống hiện có <strong>{{ total_users }}</strong> thành viên với <strong>{{ banned_users }}</strong> tài khoản đang trong trạng thái bị khóa.
+            </p>
+            <div class="quick-admin-actions">
+              <a href="{{ url_for('admin_dashboard', tab='users') }}" class="btn btn-primary btn-sm">
+                👥 Quản lý &amp; Khóa tài khoản
+              </a>
+              <a href="{{ url_for('admin_dashboard', tab='comments') }}" class="btn btn-danger btn-sm">
+                🗑️ Dọn dẹp bình luận Spam
+              </a>
+              <a href="{{ url_for('post_new') }}" class="btn btn-ghost btn-sm">
+                ✏️ Đăng thông báo mới
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Recent Comments Preview -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3><span>💬</span> Bình luận mới nhất</h3>
+            <a href="{{ url_for('admin_dashboard', tab='comments') }}" class="admin-card-link">Xem tất cả →</a>
+          </div>
+          <div class="admin-card-body">
+            {% if recent_comments %}
+              <div class="mini-comment-list">
+                {% for comment in recent_comments[:4] %}
+                  <div class="mini-comment-item" id="overview-comment-{{ comment.id }}">
+                    <img src="{{ comment.author.get_avatar() if comment.author else '' }}" alt="{{ comment.author.username if comment.author else 'User' }}" class="author-avatar-xs" />
+                    <div class="mini-comment-content">
+                      <div class="mini-comment-meta">
+                        <strong>{{ comment.author.username if comment.author else 'Ẩn danh' }}</strong>
+                        <span>trên bài: <em>{{ comment.post.title[:30] if comment.post else 'Bài viết' }}...</em></span>
+                      </div>
+                      <p class="mini-comment-text">"{{ comment.content[:70] }}{% if comment.content|length > 70 %}...{% endif %}"</p>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted">Chưa có bình luận nào trên hệ thống.</p>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- TAB 2: QUẢN LÝ NGƯỜI DÙNG (USERS)      -->
+  <!-- ══════════════════════════════════════ -->
+  {% if active_tab == 'users' %}
+    <div class="admin-tab-pane fade-in">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div>
+            <h3><span>👥</span> Danh Sách Thành Viên &amp; Phân Quyền</h3>
+            <p class="text-secondary" style="font-size: 0.85rem; margin-top: 0.2rem;">
+              Khóa tài khoản vi phạm, thay đổi vai trò Admin / Member.
+            </p>
+          </div>
+          <span class="card-badge">{{ users|length }} tài khoản</span>
+        </div>
+
+        <div class="admin-table-wrapper">
+          <table class="admin-table" id="admin-users-table">
+            <thead>
+              <tr>
+                <th>Thành viên</th>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Ngày tham gia</th>
+                <th>Bài viết</th>
+                <th>Thao tác Quản trị</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+                <tr id="user-row-{{ u.id }}" class="{% if u.is_banned %}row-banned{% endif %}">
+                  <td>
+                    <div class="table-user-cell">
+                      <img src="{{ u.get_avatar() }}" alt="{{ u.username }}" class="table-avatar" />
+                      <div>
+                        <a href="{{ url_for('user_profile', username=u.username) }}" class="table-username-link">
+                          <strong>{{ u.username }}</strong>
+                        </a>
+                        {% if u.id == current_user.id %}
+                          <span class="badge-you">(Bạn)</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-muted font-mono" style="font-size: 0.85rem;">{{ u.email }}</td>
+                  <td>
+                    <span class="role-badge role-{{ u.role }}" id="role-badge-{{ u.id }}">
+                      {% if u.is_admin %}👑 Admin{% else %}👤 Member{% endif %}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-badge status-{{ 'banned' if u.is_banned else 'active' }}" id="status-badge-{{ u.id }}">
+                      {% if u.is_banned %}🚫 Đã bị khóa{% else %}✅ Hoạt động{% endif %}
+                    </span>
+                  </td>
+                  <td class="text-muted" style="font-size: 0.85rem;">{{ u.short_joined_date() }}</td>
+                  <td><strong>{{ u.posts.count() }}</strong></td>
+                  <td>
+                    <div class="table-actions">
+                      {% if u.id != current_user.id %}
+                        <!-- Nút Khóa / Mở khóa tài khoản -->
+                        <button
+                          type="button"
+                          class="btn-admin-action btn-ban-toggle {% if u.is_banned %}btn-unban{% else %}btn-ban{% endif %}"
+                          data-user-id="{{ u.id }}"
+                          data-username="{{ u.username }}"
+                          data-banned="{{ 'true' if u.is_banned else 'false' }}"
+                          title="{% if u.is_banned %}Mở khóa tài khoản{% else %}Khóa tài khoản vi phạm{% endif %}"
+                        >
+                          <span class="action-icon">{% if u.is_banned %}🔓{% else %}🔒{% endif %}</span>
+                          <span class="action-text">{% if u.is_banned %}Mở khóa{% else %}Khóa nick{% endif %}</span>
+                        </button>
+
+                        <!-- Nút Đổi Quyền Admin / Member -->
+                        <button
+                          type="button"
+                          class="btn-admin-action btn-role-toggle"
+                          data-user-id="{{ u.id }}"
+                          data-username="{{ u.username }}"
+                          data-role="{{ u.role }}"
+                          title="Thay đổi quyền quản trị"
+                        >
+                          <span>👑</span>
+                          <span class="role-text">{% if u.is_admin %}Hạ quyền{% else %}Thăng Admin{% endif %}</span>
+                        </button>
+                      {% else %}
+                        <span class="text-muted" style="font-size: 0.8rem; font-style: italic;">Chính bạn</span>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- TAB 3: BÌNH LUẬN & SPAM (COMMENTS)     -->
+  <!-- ══════════════════════════════════════ -->
+  {% if active_tab == 'comments' %}
+    <div class="admin-tab-pane fade-in">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div>
+            <h3><span>💬</span> Kiểm Duyệt Bình Luận &amp; Xóa Spam</h3>
+            <p class="text-secondary" style="font-size: 0.85rem; margin-top: 0.2rem;">
+              Xóa nhanh các bình luận spam, quấy rối hoặc vi phạm tiêu chuẩn cộng đồng.
+            </p>
+          </div>
+          <span class="card-badge">{{ recent_comments|length }} bình luận</span>
+        </div>
+
+        <div class="admin-table-wrapper">
+          <table class="admin-table" id="admin-comments-table">
+            <thead>
+              <tr>
+                <th>Người gửi</th>
+                <th>Bài viết</th>
+                <th>Nội dung bình luận</th>
+                <th>Thời gian</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if recent_comments %}
+                {% for c in recent_comments %}
+                  <tr id="comment-row-{{ c.id }}">
+                    <td>
+                      <div class="table-user-cell">
+                        <img src="{{ c.author.get_avatar() if c.author else '' }}" alt="{{ c.author.username if c.author else 'User' }}" class="table-avatar-sm" />
+                        <strong>{{ c.author.username if c.author else 'Ẩn danh' }}</strong>
+                      </div>
+                    </td>
+                    <td>
+                      {% if c.post %}
+                        <a href="{{ url_for('post_detail', post_id=c.post.id) }}" class="table-post-link" target="_blank" title="{{ c.post.title }}">
+                          {{ c.post.title[:35] }}{% if c.post.title|length > 35 %}...{% endif %}
+                        </a>
+                      {% else %}
+                        <span class="text-muted">Đã xóa</span>
+                      {% endif %}
+                    </td>
+                    <td class="comment-content-cell">
+                      <div class="comment-bubble-text">
+                        "{{ c.content }}"
+                      </div>
+                    </td>
+                    <td class="text-muted" style="font-size: 0.85rem;">{{ c.formatted_date() }}</td>
+                    <td>
+                      <button
+                        type="button"
+                        class="btn-admin-action btn-danger btn-delete-comment"
+                        data-comment-id="{{ c.id }}"
+                        title="Xóa bình luận spam này"
+                      >
+                        <span>🗑️</span> Xóa Spam
+                      </button>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 2rem;">
+                    <span class="text-muted">Không có bình luận nào trên hệ thống.</span>
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- TAB 4: QUẢN LÝ BÀI VIẾT (POSTS)        -->
+  <!-- ══════════════════════════════════════ -->
+  {% if active_tab == 'posts' %}
+    <div class="admin-tab-pane fade-in">
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div>
+            <h3><span>📝</span> Kiểm Duyệt &amp; Quản Lý Toàn Bộ Bài Viết</h3>
+            <p class="text-secondary" style="font-size: 0.85rem; margin-top: 0.2rem;">
+              Kiểm tra nội dung, xóa bài viết vi phạm hoặc không phù hợp.
+            </p>
+          </div>
+          <span class="card-badge">{{ recent_posts|length }} bài viết</span>
+        </div>
+
+        <div class="admin-table-wrapper">
+          <table class="admin-table" id="admin-posts-table">
+            <thead>
+              <tr>
+                <th>Tiêu đề bài viết</th>
+                <th>Tác giả</th>
+                <th>Danh mục</th>
+                <th>Ngày đăng</th>
+                <th>Tương tác</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if recent_posts %}
+                {% for p in recent_posts %}
+                  <tr id="post-row-{{ p.id }}">
+                    <td>
+                      <a href="{{ url_for('post_detail', post_id=p.id) }}" class="table-post-title-link" target="_blank">
+                        <strong>{{ p.title }}</strong>
+                      </a>
+                    </td>
+                    <td>
+                      {% if p.author %}
+                        <a href="{{ url_for('user_profile', username=p.author.username) }}" class="table-author-link">
+                          <img src="{{ p.author.get_avatar() }}" alt="{{ p.author.username }}" class="table-avatar-xs" />
+                          <span>{{ p.author.username }}</span>
+                        </a>
+                      {% else %}
+                        <span class="text-muted">DevBlog</span>
+                      {% endif %}
+                    </td>
+                    <td><span class="card-category">{{ p.category }}</span></td>
+                    <td class="text-muted" style="font-size: 0.85rem;">{{ p.short_date() }}</td>
+                    <td>
+                      <span class="table-engagement">
+                        ❤️ {{ p.like_count() }} • 💬 {{ p.comment_count() }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="table-actions">
+                        <a href="{{ url_for('post_detail', post_id=p.id) }}" class="btn-admin-action btn-view" target="_blank" title="Xem bài viết">
+                          <span>👁️</span> Xem
+                        </a>
+                        <button
+                          type="button"
+                          class="btn-admin-action btn-danger btn-delete-post"
+                          data-post-id="{{ p.id }}"
+                          data-post-title="{{ p.title }}"
+                          title="Xóa bài viết này"
+                        >
+                          <span>🗑️</span> Xóa
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="6" style="text-align: center; padding: 2rem;">
+                    <span class="text-muted">Không có bài viết nào trên hệ thống.</span>
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

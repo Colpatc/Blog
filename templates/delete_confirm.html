@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Xóa bài viết — DevBlog{% endblock %}
+
+{% block content %}
+<div class="delete-page fade-in">
+  <div class="delete-card">
+    <span class="delete-icon">🗑️</span>
+    <h2>Xóa bài viết?</h2>
+    <p>Bạn sắp xóa vĩnh viễn bài viết:</p>
+    <p class="delete-title-preview">"{{ post.title }}"</p>
+    <p>Hành động này <strong>không thể hoàn tác</strong>. Bài viết sẽ bị xóa khỏi database.</p>
+
+    <div class="delete-actions">
+      <form method="POST" id="confirm-delete-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button type="submit" class="btn btn-danger btn-lg" id="confirm-delete-btn">
+          🗑️ Xác nhận xóa
+        </button>
+      </form>
+      <a href="{{ url_for('post_detail', post_id=post.id) }}" class="btn btn-ghost btn-lg" id="cancel-delete-btn">
+        ← Quay lại
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

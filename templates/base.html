@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="DevBlog — Nơi chia sẻ kiến thức lập trình và công nghệ" />
+  <title>{% block title %}DevBlog{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- HTMX for Seamless SPA-like Page Transitions -->
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+</head>
+
+<body hx-boost="true" hx-select="#page-container" hx-target="#page-container" hx-swap="outerHTML show:window:top">
+
+  <!-- ── PAGE CONTAINER (SWAPPED ON SPA TRANSITIONS) ── -->
+  <div id="page-container" class="page-container">
+
+    <!-- ── NAVBAR ── -->
+    <nav class="navbar" id="navbar">
+      <div class="nav-container">
+        <a href="{{ url_for('index') }}" class="nav-logo">
+          <span class="logo-icon">✦</span>
+          <span>Dev<strong>Blog</strong></span>
+        </a>
+
+        <div class="nav-links">
+          <a href="{{ url_for('index') }}" class="nav-link">Trang chủ</a>
+
+          <!-- ── Search Bar ── -->
+          <div class="nav-search-wrapper" id="nav-search-wrapper">
+            <button class="nav-search-toggle" id="nav-search-toggle" title="Tìm kiếm bài viết" aria-label="Mở tìm kiếm">
+              <span>🔍</span>
+            </button>
+            <form action="{{ url_for('search') }}" method="GET" class="nav-search-form" id="nav-search-form"
+              role="search">
+              <input type="search" name="q" id="nav-search-input" class="nav-search-input"
+                placeholder="Tìm kiếm bài viết..." autocomplete="off" aria-label="Tìm kiếm"
+                value="{{ request.args.get('q', '') }}" />
+              <button type="submit" class="nav-search-submit" aria-label="Tìm kiếm">🔍</button>
+              <button type="button" class="nav-search-close" id="nav-search-close" aria-label="Đóng tìm kiếm">✕</button>
+            </form>
+          </div>
+
+          {% if current_user.is_authenticated %}
+          <a href="{{ url_for('post_new') }}" class="nav-btn" id="nav-write-btn">
+            <span>✏️</span> Viết bài
+          </a>
+
+          <!-- ── Notifications Bell Dropdown ── -->
+          <div class="nav-notifications-wrapper" id="nav-notifications-wrapper">
+            <button class="nav-notif-btn" id="nav-notif-btn" type="button" aria-expanded="false"
+              title="Thông báo của bạn">
+              <span class="notif-icon">🔔</span>
+              <span class="notif-badge" id="notif-badge"
+                style="{% if not current_user.unread_notifications_count() %}display: none;{% endif %}">
+                {{ current_user.unread_notifications_count() }}
+              </span>
+            </button>
+
+            <div class="notif-dropdown-menu" id="notif-dropdown-menu">
+              <div class="notif-header">
+                <div class="notif-title-group">
+                  <span class="notif-header-title">🔔 Thông báo</span>
+                  <span class="notif-header-count" id="notif-header-count">({{ current_user.unread_notifications_count()
+                    }} mới)</span>
+                </div>
+                <button type="button" class="notif-mark-read-btn" id="notif-mark-read-btn"
+                  title="Đánh dấu tất cả là đã đọc">
+                  ✓ Đã đọc hết
+                </button>
+              </div>
+              <div class="notif-list" id="notif-list">
+                <div class="notif-empty">Đang tải thông báo...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Menu Dropdown -->
+          <div class="user-menu-dropdown" id="user-menu-dropdown">
+            <button class="user-avatar-btn" id="user-avatar-btn" type="button" aria-expanded="false"
+              title="Menu tài khoản">
+              <img src="{{ current_user.get_avatar() }}" alt="{{ current_user.username }}" class="nav-avatar-img" />
+              <span class="nav-username">{{ current_user.username }}</span>
+              <span class="nav-chevron">▾</span>
+            </button>
+
+            <div class="user-dropdown-menu" id="user-dropdown-menu">
+              <div class="dropdown-header">
+                <img src="{{ current_user.get_avatar() }}" alt="{{ current_user.username }}"
+                  class="dropdown-avatar-lg" />
+                <div class="dropdown-user-info">
+                  <strong>{{ current_user.username }}</strong>
+                  <span class="dropdown-email">{{ current_user.email }}</span>
+                </div>
+              </div>
+              <div class="dropdown-divider"></div>
+              {% if current_user.is_admin %}
+              <a href="{{ url_for('admin_dashboard') }}" class="dropdown-item dropdown-item-admin"
+                style="color: var(--accent-light); font-weight: 600;">
+                <span class="dropdown-icon">🛡️</span> Quản trị Admin
+              </a>
+              <div class="dropdown-divider"></div>
+              {% endif %}
+              <a href="{{ url_for('user_profile', username=current_user.username) }}" class="dropdown-item">
+                <span class="dropdown-icon">👤</span> Trang cá nhân
+              </a>
+              <a href="{{ url_for('user_profile', username=current_user.username, tab='saved') }}"
+                class="dropdown-item">
+                <span class="dropdown-icon">🔖</span> Bài viết đã lưu
+              </a>
+              <a href="{{ url_for('profile_edit') }}" class="dropdown-item">
+                <span class="dropdown-icon">⚙️</span> Chỉnh sửa hồ sơ
+              </a>
+              <a href="{{ url_for('post_new') }}" class="dropdown-item">
+                <span class="dropdown-icon">✏️</span> Đăng bài viết mới
+              </a>
+              <div class="dropdown-divider"></div>
+              <a href="{{ url_for('logout') }}" class="dropdown-item dropdown-item-danger">
+                <span class="dropdown-icon">🚪</span> Đăng xuất
+              </a>
+            </div>
+          </div>
+
+          {% else %}
+          <a href="{{ url_for('login') }}" class="nav-link nav-link-login">
+            <span>🔑</span> Đăng nhập
+          </a>
+          <a href="{{ url_for('register') }}" class="nav-btn nav-btn-register">
+            <span>✨</span> Đăng ký
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── FLASH MESSAGES ── -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container" id="flash-container">
+      {% for category, message in messages %}
+      <div class="flash flash-{{ category }}" role="alert">
+        <span>{{ message }}</span>
+        <button class="flash-close" onclick="this.parentElement.remove()">✕</button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="main-content" id="main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- ── RICH 4-COLUMN FOOTER ── -->
+    <footer class="footer-rich">
+      <div class="footer-container">
+        <div class="footer-grid">
+
+          <!-- Col 1: Brand & Intro & Social -->
+          <div class="footer-col footer-col-brand">
+            <a href="{{ url_for('index') }}" class="footer-logo">
+              <span class="logo-icon">✦</span>
+              <span>Dev<strong>Blog</strong></span>
+            </a>
+            <p class="footer-bio">
+              Nền tảng xuất bản và chia sẻ kiến thức công nghệ hiện đại dành cho lập trình viên và cộng đồng đam mê sáng
+              tạo.
+            </p>
+            <div class="footer-social-links">
+              <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn"
+                title="GitHub">
+                <span>💻</span>
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn"
+                title="X (Twitter)">
+                <span>𝕏</span>
+              </a>
+              <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn"
+                title="Discord">
+                <span>💬</span>
+              </a>
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn"
+                title="YouTube">
+                <span>▶</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Col 2: Navigation Links -->
+          <div class="footer-col">
+            <h4 class="footer-heading">Khám Phá</h4>
+            <ul class="footer-links-list">
+              <li><a href="{{ url_for('index') }}">🌐 Trang chủ</a></li>
+              <li><a href="{{ url_for('index', feed='for-you') }}">✨ Dành cho bạn</a></li>
+              <li><a href="{{ url_for('search') }}">🔍 Tìm kiếm bài viết</a></li>
+              {% if current_user.is_authenticated %}
+              <li><a href="{{ url_for('post_new') }}">✏️ Viết bài mới</a></li>
+              <li><a href="{{ url_for('user_profile', username=current_user.username, tab='saved') }}">🔖 Bài viết đã
+                  lưu</a></li>
+              {% else %}
+              <li><a href="{{ url_for('register') }}">✨ Đăng ký tài khoản</a></li>
+              {% endif %}
+            </ul>
+          </div>
+
+          <!-- Col 3: Popular Categories -->
+          <div class="footer-col">
+            <h4 class="footer-heading">Chủ Đề Hot</h4>
+            <ul class="footer-links-list">
+              <li><a href="{{ url_for('tag_posts', slug='cong-nghe') }}">🏷️ Công nghệ</a></li>
+              <li><a href="{{ url_for('tag_posts', slug='lap-trinh') }}">🏷️ Lập trình</a></li>
+              <li><a href="{{ url_for('tag_posts', slug='hoc-tap') }}">🏷️ Học tập &amp; Kỹ năng</a></li>
+              <li><a href="{{ url_for('tag_posts', slug='cuoc-song') }}">🏷️ Đời sống Dev</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 4: Newsletter Subscription -->
+          <div class="footer-col footer-col-newsletter">
+            <h4 class="footer-heading">Bản Tin Công Nghệ</h4>
+            <p class="newsletter-desc">
+              Nhận bài viết tuyển chọn và cập nhật công nghệ mới nhất vào sáng Thứ Hai hàng tuần.
+            </p>
+            <form class="newsletter-form" id="newsletter-form">
+              <div class="newsletter-input-group">
+                <input type="email" name="email" id="newsletter-email" class="newsletter-input"
+                  placeholder="Nhập email của bạn..." required />
+                <button type="submit" class="newsletter-submit-btn" id="newsletter-btn">
+                  Đăng ký
+                </button>
+              </div>
+              <span class="newsletter-note">🔒 Bảo mật 100%. Không spam, hủy bất kỳ lúc nào.</span>
+            </form>
+          </div>
+
+        </div>
+
+        <!-- Footer Bottom Bar -->
+        <div class="footer-bottom">
+          <p class="footer-copy">© {{ current_year }} {{ site_name }}. Xây dựng với ❤️ bởi Coltapc bằng <strong>Python
+              Flask</strong></p>
+        </div>
+
+      </div>
+    </footer>
+
+  </div>
+
+
+  <!-- ── PERSISTENT MUSIC PLAYER (KEPT ALIVE VIA HTMX PRESERVE) ── -->
+  <div id="music-player-container" class="music-player-container" hx-preserve="true">
+    <!-- HTML5 Audio -->
+    <audio id="audio-element" preload="metadata"></audio>
+
+    <!-- Playlist Drawer Modal -->
+    <div id="player-playlist-drawer" class="player-playlist-drawer" aria-hidden="true">
+      <div class="playlist-header">
+        <div class="playlist-title">
+          <span class="playlist-icon">🎧</span>
+          <div>
+            <strong>Coding &amp; Study Playlist</strong>
+            <span class="playlist-subtitle" id="playlist-count">5 bài hát</span>
+          </div>
+        </div>
+        <button id="playlist-close-btn" class="player-icon-btn" title="Đóng danh sách">✕</button>
+      </div>
+      <div class="playlist-tracks" id="playlist-tracks">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Main Player Bar -->
+    <div class="player-bar" id="player-bar">
+
+      <!-- Track Info (Left) -->
+      <div class="player-track-info">
+        <div class="player-disc" id="player-disc">
+          <span class="disc-center"></span>
+          <span class="disc-icon">🎵</span>
+        </div>
+        <div class="player-meta">
+          <div class="track-title-row">
+            <span class="track-title" id="track-title">Đang tải nhạc...</span>
+            <div class="mini-equalizer" id="mini-equalizer">
+              <span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <span class="track-artist" id="track-artist">Chill &amp; Lo-Fi Beats</span>
+        </div>
+      </div>
+
+      <!-- Controls & Progress (Center) -->
+      <div class="player-center">
+        <div class="player-controls">
+          <button id="btn-shuffle" class="player-icon-btn toggle-btn" title="Phát ngẫu nhiên">🔀</button>
+          <button id="btn-prev" class="player-icon-btn" title="Bài trước">⏮</button>
+          <button id="btn-play-pause" class="player-play-btn" title="Phát / Tạm dừng">
+            <span id="play-icon">▶</span>
+          </button>
+          <button id="btn-next" class="player-icon-btn" title="Bài kế tiếp">⏭</button>
+          <button id="btn-loop" class="player-icon-btn toggle-btn" title="Lặp lại">🔁</button>
+        </div>
+
+        <div class="player-progress-row">
+          <span class="player-time" id="current-time">0:00</span>
+          <div class="progress-bar-container" id="progress-container">
+            <div class="progress-buffered" id="progress-buffered"></div>
+            <div class="progress-filled" id="progress-filled"></div>
+            <input type="range" class="progress-slider" id="progress-slider" min="0" max="100" value="0" step="0.1"
+              title="Tua nhạc" />
+          </div>
+          <span class="player-time" id="total-duration">0:00</span>
+        </div>
+      </div>
+
+      <!-- Volume & Playlist Toggle (Right) -->
+      <div class="player-right">
+        <div class="volume-container">
+          <button id="btn-mute" class="player-icon-btn" title="Tắt / Bật tiếng">🔊</button>
+          <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.01" value="0.7"
+            title="Âm lượng" />
+        </div>
+        <button id="btn-playlist-toggle" class="player-playlist-btn" title="Mở danh sách phát">
+          <span>📜</span>
+          <span class="btn-text">Playlist</span>
+        </button>
+        <button id="btn-player-minimize" class="player-icon-btn minimize-btn" title="Thu nhỏ trình phát">⌄</button>
+      </div>
+
+    </div>
+
+    <!-- Minimized Floating Pill -->
+    <div id="player-minimized-pill" class="player-minimized-pill" style="display: none;">
+      <button id="btn-pill-play" class="pill-play-btn">▶</button>
+      <div class="pill-meta">
+        <span class="pill-badge">🎵 Coding Music</span>
+        <span class="pill-title" id="pill-title">Chill Lofi Coding</span>
+      </div>
+      <button id="btn-pill-expand" class="player-icon-btn" title="Mở rộng trình phát">⌃</button>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/music-player.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Đăng nhập — DevBlog{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper fade-in">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-icon-badge">🔑</div>
+      <h1 class="auth-title">Đăng nhập tài khoản</h1>
+      <p class="auth-subtitle">Chào mừng bạn quay trở lại với cộng đồng DevBlog</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('login', next=request.args.get('next')) }}" class="auth-form" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        <label for="{{ form.email_or_username.id }}" class="form-label">
+          <span>📧</span> Tên đăng nhập hoặc Email
+        </label>
+        {{ form.email_or_username(class="form-control" + (" is-invalid" if form.email_or_username.errors else ""), placeholder="ví dụ: alex_dev hoặc alex@devblog.io", autofocus=true) }}
+        {% for error in form.email_or_username.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.password.id }}" class="form-label">
+          <span>🔒</span> Mật khẩu
+        </label>
+        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Nhập mật khẩu của bạn") }}
+        {% for error in form.password.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-row-checkbox">
+        <label class="custom-checkbox">
+          {{ form.remember_me() }}
+          <span class="checkbox-box"></span>
+          <span class="checkbox-label">Ghi nhớ đăng nhập</span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        {{ form.submit(class="btn btn-primary btn-block btn-lg") }}
+      </div>
+    </form>
+
+    <div class="auth-footer">
+      <p>Chưa có tài khoản? <a href="{{ url_for('register') }}" class="auth-link">Đăng ký ngay</a></p>
+    </div>
+
+    <!-- Quick Demo Tip -->
+    <div class="demo-account-hint">
+      <strong>💡 Tài khoản trải nghiệm nhanh:</strong>
+      <code>alex_dev</code> &bull; Mật khẩu: <code>password123</code>
+    </div>
+  </div>
+</div>
+{% endblock %}

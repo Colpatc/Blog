@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Đăng ký tài khoản — DevBlog{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper fade-in">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-icon-badge">✨</div>
+      <h1 class="auth-title">Tham gia DevBlog</h1>
+      <p class="auth-subtitle">Tạo tài khoản để viết bài, chia sẻ kiến thức và kết nối lập trình viên</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('register') }}" class="auth-form" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        <label for="{{ form.username.id }}" class="form-label">
+          <span>👤</span> Tên người dùng (Username)
+        </label>
+        {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), placeholder="ví dụ: dev_ninja, coding_master", autofocus=true) }}
+        <span class="field-hint">Chỉ gồm chữ cái, chữ số và dấu gạch dưới (_), từ 3-30 ký tự.</span>
+        {% for error in form.username.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.email.id }}" class="form-label">
+          <span>📧</span> Địa chỉ Email
+        </label>
+        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="name@example.com") }}
+        {% for error in form.email.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.password.id }}" class="form-label">
+          <span>🔒</span> Mật khẩu
+        </label>
+        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Ít nhất 6 ký tự") }}
+        {% for error in form.password.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label for="{{ form.password2.id }}" class="form-label">
+          <span>🛡️</span> Xác nhận mật khẩu
+        </label>
+        {{ form.password2(class="form-control" + (" is-invalid" if form.password2.errors else ""), placeholder="Nhập lại mật khẩu phía trên") }}
+        {% for error in form.password2.errors %}
+          <div class="field-error">{{ error }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="form-actions">
+        {{ form.submit(class="btn btn-primary btn-block btn-lg") }}
+      </div>
+    </form>
+
+    <div class="auth-footer">
+      <p>Đã có tài khoản? <a href="{{ url_for('login') }}" class="auth-link">Đăng nhập</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
