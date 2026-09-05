@@ -30,7 +30,10 @@ COVERS_FOLDER = os.path.join(UPLOAD_FOLDER, 'covers')
 AVATARS_FOLDER = os.path.join(UPLOAD_FOLDER, 'avatars')
 
 os.makedirs(INSTANCE_DIR, exist_ok=True)
-os.makedirs(COVERS_FOLDER, exist_ok=True)
+try:
+    os.makedirs(COVERS_FOLDER, exist_ok=True)
+except OSError:
+    pass
 os.makedirs(AVATARS_FOLDER, exist_ok=True)
 
 DB_PATH = os.path.join(INSTANCE_DIR, 'blog.db')
