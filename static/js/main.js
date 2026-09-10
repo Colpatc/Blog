@@ -115,6 +115,26 @@ function initPageEnhancements() {
 
   // ── Clickable Post Cards (toàn bộ card có thể bấm để chuyển trang) ──
   setupClickableCards();
+
+  // ── Dark / Light Mode Toggle ──
+  setupThemeToggle();
+}
+
+/**
+ * Thiết lập nút bật/tắt chế độ Sáng / Tối (Dark mode)
+ */
+function setupThemeToggle() {
+  const toggleBtn = document.getElementById('theme-toggle-btn');
+  if (!toggleBtn) return;
+  if (toggleBtn.dataset.themeAttached) return;
+  toggleBtn.dataset.themeAttached = 'true';
+
+  toggleBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.toggle('dark');
+    try {
+      localStorage.setItem('devblog_theme', isDark ? 'dark' : 'light');
+    } catch (e) {}
+  });
 }
 
 // ── Initialize on first load & HTMX transitions ──
@@ -967,28 +987,48 @@ function setupNotifications() {
         notifBadge.style.display = count > 0 ? 'flex' : 'none';
       }
       if (notifHeaderCount) {
-        notifHeaderCount.textContent = count > 0 ? `(${count} mới)` : '(Đã đọc hết)';
+        notifHeaderCount.textContent = count > 0 ? `${count} mới` : 'Đã đọc hết';
+        notifHeaderCount.className = count > 0 
+          ? 'text-[11px] px-2 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-sky-300 border border-blue-200/60 dark:border-blue-800/60'
+          : 'text-[11px] px-2 py-0.5 rounded-full font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700';
       }
 
       if (!data.notifications || data.notifications.length === 0) {
-        notifList.innerHTML = '<div class="notif-empty">🔔 Chưa có thông báo nào.</div>';
+        notifList.innerHTML = `
+          <div class="notif-empty-state py-8 px-4 text-center flex flex-col items-center justify-center">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-500/10 to-sky-400/20 dark:from-blue-500/20 dark:to-sky-400/30 flex items-center justify-center text-xl mb-3 shadow-2xs ring-1 ring-blue-500/20">
+              🔔
+            </div>
+            <div class="font-bold text-sm text-slate-800 dark:text-slate-100 mb-1">Chưa có thông báo mới</div>
+            <p class="text-xs text-slate-400 dark:text-slate-400 max-w-[240px] leading-relaxed">
+              Các thông báo về lượt thích, bình luận và theo dõi mới sẽ hiển thị tại đây.
+            </p>
+          </div>
+        `;
         return;
       }
 
       notifList.innerHTML = data.notifications.map(n => `
         <a href="${n.link}" class="notif-item ${n.is_read ? '' : 'unread'}" data-id="${n.id}">
-          <img src="${n.actor_avatar}" alt="${n.actor_username}" class="notif-actor-avatar" />
-          <div class="notif-item-body">
+          <div class="notif-avatar-wrap relative flex-shrink-0">
+            <img src="${n.actor_avatar}" alt="${n.actor_username}" class="notif-actor-avatar" />
+            <span class="notif-verb-badge">${verbIcon[n.verb] || '🔔'}</span>
+          </div>
+          <div class="notif-item-body flex-1 min-w-0">
             <div class="notif-message">${n.message}</div>
             <div class="notif-time">${n.time}</div>
           </div>
-          <span class="notif-verb-badge" title="${n.verb}">${verbIcon[n.verb] || '🔔'}</span>
+          ${!n.is_read ? '<span class="notif-unread-dot flex-shrink-0"></span>' : ''}
         </a>
       `).join('');
 
     } catch (err) {
       console.error('Load notifications error:', err);
-      if (notifList) notifList.innerHTML = '<div class="notif-empty">⚠️ Lỗi tải thông báo.</div>';
+      if (notifList) notifList.innerHTML = `
+        <div class="py-6 px-4 text-center text-xs text-red-500 dark:text-red-400">
+          ⚠️ Không thể tải thông báo. Vui lòng thử lại sau.
+        </div>
+      `;
     }
   }
 

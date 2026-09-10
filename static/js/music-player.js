@@ -126,14 +126,6 @@
     },
     {
       id: 13,
-      title: 'TikTok Trending Beat',
-      artist: 'Viral Beats',
-      genre: 'Trap / Trending Vibe',
-      src: resolveAudioSrc('/static/music/SnapTik.Net_7459621410965638408.mp3'),
-      duration: '0:35'
-    },
-    {
-      id: 14,
       title: 'Coding & Focus Session Flow',
       artist: 'DevBlog Studio',
       genre: 'Ambient / Coding Flow',
@@ -281,25 +273,36 @@
     playlistTracksContainer.innerHTML = '';
 
     PLAYLIST.forEach((track, index) => {
+      const isCurrent = index === state.currentIndex;
+      const isCurrentlyPlaying = isCurrent && state.isPlaying && !audio.paused;
+
       const item = document.createElement('div');
-      item.className = `playlist-item ${index === state.currentIndex ? 'active' : ''}`;
+      item.className = `playlist-item ${isCurrent ? 'active' : ''}`;
       item.setAttribute('data-index', index);
       item.innerHTML = `
         <div class="playlist-item-left">
-          <span class="playlist-item-num">${index + 1}</span>
+          <div class="playlist-item-num-wrap">
+            <span class="playlist-item-num" style="${isCurrentlyPlaying ? 'display:none;' : ''}">${index + 1}</span>
+            <div class="playlist-item-eq" style="${isCurrentlyPlaying ? 'display:flex;' : 'display:none;'}">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
           <div class="playlist-item-info">
             <span class="playlist-item-title">${track.title}</span>
-            <span class="playlist-item-artist">${track.artist} • ${track.genre}</span>
+            <span class="playlist-item-artist">${track.artist} <span class="opacity-60">•</span> ${track.genre}</span>
           </div>
         </div>
         <div class="playlist-item-right">
           <span class="playlist-item-duration">${track.duration}</span>
-          <span class="playlist-playing-badge">▶</span>
         </div>
       `;
 
       item.addEventListener('click', () => {
-        playTrack(index);
+        if (state.currentIndex === index && !audio.paused) {
+          pauseAudio();
+        } else {
+          playTrack(index);
+        }
       });
 
       playlistTracksContainer.appendChild(item);
@@ -391,7 +394,6 @@
     updatePlayPauseUI(false);
   }
 
-
   function updatePlayPauseUI(playing) {
     if (playIcon) playIcon.textContent = playing ? '⏸' : '▶';
     if (pillPlayBtn) pillPlayBtn.textContent = playing ? '⏸' : '▶';
@@ -399,9 +401,29 @@
 
     if (disc) {
       disc.classList.toggle('spinning', playing);
+      disc.classList.toggle('playing', playing);
     }
     if (equalizer) {
       equalizer.classList.toggle('active', playing);
+    }
+
+    if (playlistTracksContainer) {
+      const items = playlistTracksContainer.querySelectorAll('.playlist-item');
+      items.forEach((item, idx) => {
+        const isCurrent = idx === state.currentIndex;
+        item.classList.toggle('active', isCurrent);
+        const eq = item.querySelector('.playlist-item-eq');
+        const num = item.querySelector('.playlist-item-num');
+        if (eq && num) {
+          if (isCurrent && playing) {
+            eq.style.display = 'flex';
+            num.style.display = 'none';
+          } else {
+            eq.style.display = 'none';
+            num.style.display = 'inline';
+          }
+        }
+      });
     }
   }
 

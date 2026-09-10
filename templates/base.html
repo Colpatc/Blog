@@ -1,137 +1,171 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="h-full bg-slate-50 dark:bg-slate-950 dark:text-slate-100">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="DevBlog — Nơi chia sẻ kiến thức lập trình và công nghệ" />
+  <meta name="description" content="DevBlog — Nơi chia sẻ kiến thức lập trình, kinh nghiệm và công nghệ hiện đại" />
   <title>{% block title %}DevBlog{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- Tailwind CSS & Custom Theme (Compiled) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}" />
   <!-- HTMX for Seamless SPA-like Page Transitions -->
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <!-- Instant Theme Detection to prevent FOUC -->
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('devblog_theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 
-<body hx-boost="true" hx-select="#page-container" hx-target="#page-container" hx-swap="outerHTML show:window:top">
+<body class="min-h-full flex flex-col font-sans text-slate-900 dark:text-slate-100 antialiased bg-slate-50 dark:bg-slate-950 selection:bg-blue-600 selection:text-white transition-colors duration-200"
+  hx-boost="true" hx-select="#page-container" hx-target="#page-container" hx-swap="outerHTML show:window:top">
+
+  <!-- ── READING PROGRESS BAR (Fixed Top) ── -->
+  <div id="reading-progress-bar" style="width: 0%;"></div>
 
   <!-- ── PAGE CONTAINER (SWAPPED ON SPA TRANSITIONS) ── -->
-  <div id="page-container" class="page-container">
+  <div id="page-container" class="page-container flex-1 flex flex-col">
 
     <!-- ── NAVBAR ── -->
-    <nav class="navbar" id="navbar">
-      <div class="nav-container">
-        <a href="{{ url_for('index') }}" class="nav-logo">
-          <span class="logo-icon">✦</span>
-          <span>Dev<strong>Blog</strong></span>
+    <nav class="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-xs transition-all duration-200" id="navbar">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        
+        <!-- Logo -->
+        <a href="{{ url_for('index') }}" class="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 dark:text-white group">
+          <span class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-sky-400 flex items-center justify-center text-white text-base shadow-sm shadow-blue-500/20 group-hover:scale-105 transition-transform">✦</span>
+          <span class="font-extrabold tracking-tight">Dev<span class="text-blue-600 dark:text-sky-400">Blog</span></span>
         </a>
 
-        <div class="nav-links">
-          <a href="{{ url_for('index') }}" class="nav-link">Trang chủ</a>
+        <!-- Right Side Nav Items -->
+        <div class="flex items-center gap-2 sm:gap-2.5">
 
           <!-- ── Search Bar ── -->
           <div class="nav-search-wrapper" id="nav-search-wrapper">
-            <button class="nav-search-toggle" id="nav-search-toggle" title="Tìm kiếm bài viết" aria-label="Mở tìm kiếm">
-              <span>🔍</span>
+            <button class="nav-search-toggle w-9 h-9 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100/90 hover:bg-blue-50 dark:bg-slate-800/90 dark:hover:bg-slate-700/90 border border-slate-200 dark:border-slate-700 rounded-xl transition shadow-2xs cursor-pointer" id="nav-search-toggle" title="Tìm kiếm bài viết (Ctrl+K)" aria-label="Mở tìm kiếm">
+              <span class="text-sm">🔍</span>
             </button>
-            <form action="{{ url_for('search') }}" method="GET" class="nav-search-form" id="nav-search-form"
-              role="search">
-              <input type="search" name="q" id="nav-search-input" class="nav-search-input"
-                placeholder="Tìm kiếm bài viết..." autocomplete="off" aria-label="Tìm kiếm"
+            <form action="{{ url_for('search') }}" method="GET" class="nav-search-form" id="nav-search-form" role="search">
+              <input type="search" name="q" id="nav-search-input" class="w-full bg-transparent text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none px-2"
+                placeholder="Tìm kiếm bài viết, chủ đề..." autocomplete="off" aria-label="Tìm kiếm"
                 value="{{ request.args.get('q', '') }}" />
-              <button type="submit" class="nav-search-submit" aria-label="Tìm kiếm">🔍</button>
-              <button type="button" class="nav-search-close" id="nav-search-close" aria-label="Đóng tìm kiếm">✕</button>
+              <button type="submit" class="p-1 text-slate-400 hover:text-blue-600 dark:hover:text-sky-400 text-sm" aria-label="Tìm kiếm">🔍</button>
+              <button type="button" class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm ml-1" id="nav-search-close" aria-label="Đóng tìm kiếm">✕</button>
             </form>
           </div>
 
           {% if current_user.is_authenticated %}
-          <a href="{{ url_for('post_new') }}" class="nav-btn" id="nav-write-btn">
-            <span>✏️</span> Viết bài
+          <!-- Write Button -->
+          <a href="{{ url_for('post_new') }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-xs hover:shadow transition active:scale-95 border border-blue-500" id="nav-write-btn">
+            <span>✏️</span> <span class="hidden sm:inline">Viết bài</span>
           </a>
 
+          <!-- ── Dark / Light Mode Toggle Button (Next to Notification) ── -->
+          <button type="button" class="w-9 h-9 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100/90 hover:bg-blue-50 dark:bg-slate-800/90 dark:hover:bg-slate-700/90 border border-slate-200 dark:border-slate-700 rounded-xl transition shadow-2xs cursor-pointer" id="theme-toggle-btn" title="Chuyển chế độ Sáng / Tối (Dark mode)" aria-label="Đổi giao diện">
+            <span class="text-sm hidden dark:inline">☀️</span>
+            <span class="text-sm inline dark:hidden">🌙</span>
+          </button>
+
           <!-- ── Notifications Bell Dropdown ── -->
-          <div class="nav-notifications-wrapper" id="nav-notifications-wrapper">
-            <button class="nav-notif-btn" id="nav-notif-btn" type="button" aria-expanded="false"
+          <div class="nav-notifications-wrapper relative" id="nav-notifications-wrapper">
+            <button class="nav-notif-btn relative w-9 h-9 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 bg-slate-100/90 hover:bg-blue-50 dark:bg-slate-800/90 dark:hover:bg-slate-700/90 border border-slate-200 dark:border-slate-700 rounded-xl transition shadow-2xs cursor-pointer" id="nav-notif-btn" type="button" aria-expanded="false"
               title="Thông báo của bạn">
-              <span class="notif-icon">🔔</span>
-              <span class="notif-badge" id="notif-badge"
+              <span class="text-sm">🔔</span>
+              <span class="nav-notif-badge absolute -top-1 -right-1 px-1.5 py-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-900" id="notif-badge"
                 style="{% if not current_user.unread_notifications_count() %}display: none;{% endif %}">
                 {{ current_user.unread_notifications_count() }}
               </span>
             </button>
 
-            <div class="notif-dropdown-menu" id="notif-dropdown-menu">
-              <div class="notif-header">
-                <div class="notif-title-group">
-                  <span class="notif-header-title">🔔 Thông báo</span>
-                  <span class="notif-header-count" id="notif-header-count">({{ current_user.unread_notifications_count()
-                    }} mới)</span>
+            <div class="notif-dropdown-menu dark:bg-slate-900/95 dark:backdrop-blur-xl dark:border-slate-800/80 shadow-2xl" id="notif-dropdown-menu">
+              <div class="p-3.5 px-4 bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between backdrop-blur-sm">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-sm text-slate-900 dark:text-white">🔔 Thông báo</span>
+                  <span class="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-sky-300 border border-blue-200/60 dark:border-blue-800/60" id="notif-header-count">
+                    {{ current_user.unread_notifications_count() }} mới
+                  </span>
                 </div>
-                <button type="button" class="notif-mark-read-btn" id="notif-mark-read-btn"
+                <button type="button" class="text-xs text-blue-600 dark:text-sky-400 hover:text-blue-700 dark:hover:text-sky-300 font-semibold px-2.5 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-800 border border-transparent hover:border-blue-100 dark:hover:border-slate-700 transition flex items-center gap-1 cursor-pointer" id="notif-mark-read-btn"
                   title="Đánh dấu tất cả là đã đọc">
-                  ✓ Đã đọc hết
+                  <span>✓</span> Đã đọc hết
                 </button>
               </div>
-              <div class="notif-list" id="notif-list">
-                <div class="notif-empty">Đang tải thông báo...</div>
+              <div class="notif-list max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60" id="notif-list">
+                <div class="p-8 text-center text-sm text-slate-400 dark:text-slate-500">Đang tải thông báo...</div>
               </div>
             </div>
           </div>
 
-          <!-- User Menu Dropdown -->
-          <div class="user-menu-dropdown" id="user-menu-dropdown">
-            <button class="user-avatar-btn" id="user-avatar-btn" type="button" aria-expanded="false"
+          <!-- ── User Menu Dropdown ── -->
+          <div class="user-menu-dropdown relative" id="user-menu-dropdown">
+            <button class="user-avatar-btn flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full bg-slate-100/90 hover:bg-slate-200/80 dark:bg-slate-800/90 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition cursor-pointer" id="user-avatar-btn" type="button" aria-expanded="false"
               title="Menu tài khoản">
-              <img src="{{ current_user.get_avatar() }}" alt="{{ current_user.username }}" class="nav-avatar-img" />
-              <span class="nav-username">{{ current_user.username }}</span>
-              <span class="nav-chevron">▾</span>
+              <img src="{{ current_user.get_avatar() }}" alt="{{ current_user.username }}" class="w-7 h-7 rounded-full object-cover ring-1 ring-blue-500/30" />
+              <span class="text-sm font-semibold text-slate-700 dark:text-slate-200 hidden sm:inline">{{ current_user.username }}</span>
+              <span class="text-xs text-slate-400">▾</span>
             </button>
 
-            <div class="user-dropdown-menu" id="user-dropdown-menu">
-              <div class="dropdown-header">
+            <div class="user-dropdown-menu dark:bg-slate-900 dark:border-slate-800" id="user-dropdown-menu">
+              <div class="p-4 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
                 <img src="{{ current_user.get_avatar() }}" alt="{{ current_user.username }}"
-                  class="dropdown-avatar-lg" />
-                <div class="dropdown-user-info">
-                  <strong>{{ current_user.username }}</strong>
-                  <span class="dropdown-email">{{ current_user.email }}</span>
+                  class="w-11 h-11 rounded-full object-cover ring-2 ring-blue-500/20" />
+                <div class="min-w-0 flex-1">
+                  <div class="font-bold text-slate-900 dark:text-white text-sm truncate">{{ current_user.username }}</div>
+                  <div class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ current_user.email }}</div>
                 </div>
               </div>
-              <div class="dropdown-divider"></div>
-              {% if current_user.is_admin %}
-              <a href="{{ url_for('admin_dashboard') }}" class="dropdown-item dropdown-item-admin"
-                style="color: var(--accent-light); font-weight: 600;">
-                <span class="dropdown-icon">🛡️</span> Quản trị Admin
-              </a>
-              <div class="dropdown-divider"></div>
-              {% endif %}
-              <a href="{{ url_for('user_profile', username=current_user.username) }}" class="dropdown-item">
-                <span class="dropdown-icon">👤</span> Trang cá nhân
-              </a>
-              <a href="{{ url_for('user_profile', username=current_user.username, tab='saved') }}"
-                class="dropdown-item">
-                <span class="dropdown-icon">🔖</span> Bài viết đã lưu
-              </a>
-              <a href="{{ url_for('profile_edit') }}" class="dropdown-item">
-                <span class="dropdown-icon">⚙️</span> Chỉnh sửa hồ sơ
-              </a>
-              <a href="{{ url_for('post_new') }}" class="dropdown-item">
-                <span class="dropdown-icon">✏️</span> Đăng bài viết mới
-              </a>
-              <div class="dropdown-divider"></div>
-              <a href="{{ url_for('logout') }}" class="dropdown-item dropdown-item-danger">
-                <span class="dropdown-icon">🚪</span> Đăng xuất
-              </a>
+              <div class="p-2 text-sm text-slate-700 dark:text-slate-300">
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin_dashboard') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-blue-700 dark:text-sky-400 font-semibold hover:bg-blue-50 dark:hover:bg-slate-800 transition">
+                  <span class="text-base">🛡️</span> Quản trị Admin
+                </a>
+                <div class="my-1 border-t border-slate-100 dark:border-slate-800"></div>
+                {% endif %}
+                <a href="{{ url_for('user_profile', username=current_user.username) }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                  <span class="text-base">👤</span> Trang cá nhân
+                </a>
+                <a href="{{ url_for('user_profile', username=current_user.username, tab='saved') }}"
+                  class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                  <span class="text-base">🔖</span> Bài viết đã lưu
+                </a>
+                <a href="{{ url_for('profile_edit') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                  <span class="text-base">⚙️</span> Chỉnh sửa hồ sơ
+                </a>
+                <a href="{{ url_for('post_new') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                  <span class="text-base">✏️</span> Đăng bài viết mới
+                </a>
+                <div class="my-1 border-t border-slate-100 dark:border-slate-800"></div>
+                <a href="{{ url_for('logout') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition">
+                  <span class="text-base">🚪</span> Đăng xuất
+                </a>
+              </div>
             </div>
           </div>
 
           {% else %}
-          <a href="{{ url_for('login') }}" class="nav-link nav-link-login">
-            <span>🔑</span> Đăng nhập
+          <!-- ── Dark / Light Mode Toggle Button (Guest) ── -->
+          <button type="button" class="w-9 h-9 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100/90 hover:bg-blue-50 dark:bg-slate-800/90 dark:hover:bg-slate-700/90 border border-slate-200 dark:border-slate-700 rounded-xl transition shadow-2xs cursor-pointer" id="theme-toggle-btn" title="Chuyển chế độ Sáng / Tối (Dark mode)" aria-label="Đổi giao diện">
+            <span class="text-sm hidden dark:inline">☀️</span>
+            <span class="text-sm inline dark:hidden">🌙</span>
+          </button>
+
+          <!-- Guest Navigation -->
+          <a href="{{ url_for('login') }}" class="text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 px-3.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+            Đăng nhập
           </a>
-          <a href="{{ url_for('register') }}" class="nav-btn nav-btn-register">
+          <a href="{{ url_for('register') }}" class="inline-flex items-center gap-1 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl border border-blue-500 shadow-xs hover:shadow transition active:scale-95">
             <span>✨</span> Đăng ký
           </a>
           {% endif %}
@@ -139,112 +173,91 @@
       </div>
     </nav>
 
-    <!-- ── FLASH MESSAGES ── -->
+    <!-- ── FLASH MESSAGES (TOASTS) ── -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div class="flash-container" id="flash-container">
       {% for category, message in messages %}
       <div class="flash flash-{{ category }}" role="alert">
-        <span>{{ message }}</span>
-        <button class="flash-close" onclick="this.parentElement.remove()">✕</button>
+        <span class="flex items-center gap-2">
+          {% if category == 'success' %}✅{% elif category in ['danger', 'error'] %}⚠️{% else %}ℹ️{% endif %}
+          {{ message }}
+        </span>
+        <button type="button" class="flash-close" onclick="this.parentElement.remove()" aria-label="Đóng thông báo">✕</button>
       </div>
       {% endfor %}
     </div>
     {% endif %}
     {% endwith %}
 
-    <!-- ── MAIN CONTENT ── -->
-    <main class="main-content" id="main-content">
+    <!-- ── MAIN CONTENT (HTMX TARGET) ── -->
+    <main id="main-content" class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8" hx-boost="true" hx-indicator="#global-loading-bar">
       {% block content %}{% endblock %}
     </main>
 
-    <!-- ── RICH 4-COLUMN FOOTER ── -->
-    <footer class="footer-rich">
-      <div class="footer-container">
-        <div class="footer-grid">
-
-          <!-- Col 1: Brand & Intro & Social -->
-          <div class="footer-col footer-col-brand">
-            <a href="{{ url_for('index') }}" class="footer-logo">
-              <span class="logo-icon">✦</span>
-              <span>Dev<strong>Blog</strong></span>
+    <!-- ── FOOTER ── -->
+    <footer class="mt-auto border-t border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          
+          <!-- Col 1: Brand Info -->
+          <div class="space-y-4">
+            <a href="{{ url_for('index') }}" class="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+              <span class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white text-sm">✦</span>
+              <span class="font-extrabold tracking-tight">Dev<span class="text-blue-600 dark:text-sky-400">Blog</span></span>
             </a>
-            <p class="footer-bio">
-              Nền tảng xuất bản và chia sẻ kiến thức công nghệ hiện đại dành cho lập trình viên và cộng đồng đam mê sáng
-              tạo.
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              Cộng đồng chia sẻ kiến thức, kinh nghiệm lập trình và trải nghiệm sống của các Developer Việt Nam.
             </p>
-            <div class="footer-social-links">
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn"
-                title="GitHub">
-                <span>💻</span>
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn"
-                title="X (Twitter)">
-                <span>𝕏</span>
-              </a>
-              <a href="https://discord.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn"
-                title="Discord">
-                <span>💬</span>
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="social-icon-btn"
-                title="YouTube">
-                <span>▶</span>
-              </a>
-            </div>
           </div>
 
-          <!-- Col 2: Navigation Links -->
-          <div class="footer-col">
-            <h4 class="footer-heading">Khám Phá</h4>
-            <ul class="footer-links-list">
-              <li><a href="{{ url_for('index') }}">🌐 Trang chủ</a></li>
-              <li><a href="{{ url_for('index', feed='for-you') }}">✨ Dành cho bạn</a></li>
-              <li><a href="{{ url_for('search') }}">🔍 Tìm kiếm bài viết</a></li>
+          <!-- Col 2: Quick Links -->
+          <div>
+            <h4 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Khám Phá</h4>
+            <ul class="space-y-2.5 text-sm">
+              <li><a href="{{ url_for('index') }}" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition">Trang chủ</a></li>
+              <li><a href="{{ url_for('post_new') }}" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition">Viết bài mới</a></li>
+              <li><a href="{{ url_for('search') }}" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition">Tìm kiếm bài viết</a></li>
               {% if current_user.is_authenticated %}
-              <li><a href="{{ url_for('post_new') }}">✏️ Viết bài mới</a></li>
-              <li><a href="{{ url_for('user_profile', username=current_user.username, tab='saved') }}">🔖 Bài viết đã
-                  lưu</a></li>
-              {% else %}
-              <li><a href="{{ url_for('register') }}">✨ Đăng ký tài khoản</a></li>
+              <li><a href="{{ url_for('user_profile', username=current_user.username) }}" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition">Trang cá nhân</a></li>
               {% endif %}
             </ul>
           </div>
 
           <!-- Col 3: Popular Categories -->
-          <div class="footer-col">
-            <h4 class="footer-heading">Chủ Đề Hot</h4>
-            <ul class="footer-links-list">
-              <li><a href="{{ url_for('tag_posts', slug='cong-nghe') }}">🏷️ Công nghệ</a></li>
-              <li><a href="{{ url_for('tag_posts', slug='lap-trinh') }}">🏷️ Lập trình</a></li>
-              <li><a href="{{ url_for('tag_posts', slug='hoc-tap') }}">🏷️ Học tập &amp; Kỹ năng</a></li>
-              <li><a href="{{ url_for('tag_posts', slug='cuoc-song') }}">🏷️ Đời sống Dev</a></li>
+          <div>
+            <h4 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Chủ Đề Nổi Bật</h4>
+            <ul class="space-y-2.5 text-sm">
+              <li><a href="{{ url_for('tag_posts', slug='cong-nghe') }}" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition flex items-center gap-2">🏷️ Công nghệ</a></li>
+              <li><a href="{{ url_for('tag_posts', slug='lap-trinh') }}" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition flex items-center gap-2">🏷️ Lập trình</a></li>
+              <li><a href="{{ url_for('tag_posts', slug='hoc-tap') }}" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition flex items-center gap-2">🏷️ Học tập &amp; Kỹ năng</a></li>
+              <li><a href="{{ url_for('tag_posts', slug='cuoc-song') }}" class="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 transition flex items-center gap-2">🏷️ Đời sống Dev</a></li>
             </ul>
           </div>
 
-          <!-- Col 4: Newsletter Subscription -->
-          <div class="footer-col footer-col-newsletter">
-            <h4 class="footer-heading">Bản Tin Công Nghệ</h4>
-            <p class="newsletter-desc">
+          <!-- Col 4: High-Conversion Newsletter -->
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">Bản Tin Dev Thứ Hai</h4>
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               Nhận bài viết tuyển chọn và cập nhật công nghệ mới nhất vào sáng Thứ Hai hàng tuần.
             </p>
-            <form class="newsletter-form" id="newsletter-form">
-              <div class="newsletter-input-group">
-                <input type="email" name="email" id="newsletter-email" class="newsletter-input"
+            <form class="space-y-2.5" id="newsletter-form">
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input type="email" name="email" id="newsletter-email" class="flex-1 px-3.5 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-sky-400 focus:bg-white dark:focus:bg-slate-800 transition placeholder-slate-400 dark:placeholder-slate-500 text-slate-800 dark:text-slate-100"
                   placeholder="Nhập email của bạn..." required />
-                <button type="submit" class="newsletter-submit-btn" id="newsletter-btn">
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-xs hover:shadow transition whitespace-nowrap active:scale-95" id="newsletter-btn">
                   Đăng ký
                 </button>
               </div>
-              <span class="newsletter-note">🔒 Bảo mật 100%. Không spam, hủy bất kỳ lúc nào.</span>
+              <p class="text-[11px] text-slate-400 dark:text-slate-500">🔒 Cam kết không spam, hủy đăng ký bất cứ lúc nào.</p>
             </form>
           </div>
 
         </div>
 
         <!-- Footer Bottom Bar -->
-        <div class="footer-bottom">
-          <p class="footer-copy">© {{ current_year }} {{ site_name }}. Xây dựng với ❤️ bởi Coltapc bằng <strong>Python
-              Flask</strong></p>
+        <div class="mt-12 pt-6 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center text-center text-xs text-slate-500 dark:text-slate-400">
+          <p>© {{ current_year }} DevBlog. Tối ưu trải nghiệm hiện đại và tốc độ cao.</p>
         </div>
 
       </div>

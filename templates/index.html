@@ -6,459 +6,518 @@ Chủ đề: {{ selected_tag.name }} — DevBlog
 {% elif current_feed == 'for-you' %}
 Dành cho bạn — Bảng tin cá nhân hóa | DevBlog
 {% else %}
-DevBlog — Nơi chia sẻ kiến thức công nghệ
+DevBlog — Nơi chia sẻ kiến thức công nghệ và lập trình hiện đại
 {% endif %}
 {% endblock %}
 
 {% block content %}
 <!-- ── HERO (Hiển thị khi ở trang chủ toàn bộ và chưa lọc tag và ở page 1) ── -->
 {% if not selected_tag and current_feed != 'for-you' and (not pagination or pagination.page == 1) %}
-<section class="hero fade-in">
-  <div class="hero-badge">✦ TRẠM DỪNG CHÂN CỦA ĐỒNG ÂM</div>
-  <h1>Lưu giữ những mảnh ghép trải nghiệm<br>và cảm xúc thường nhật</h1>
-  <p>Nơi cùng nhau ghi lại những bài học đắt giá, những góc nhìn cuộc sống và hành trình trưởng thành.</p>
-  <div class="hero-stats">
-    <div class="stat">
-      <span class="stat-value">{{ pagination.total if pagination else posts|length }}</span>
-      <span class="stat-label">Bài viết</span>
+<section
+  class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-950 text-white p-8 sm:p-12 mb-10 shadow-xl border border-blue-800/40">
+  <!-- Subtle decorative light beams -->
+  <div class="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-sky-400/15 rounded-full blur-3xl pointer-events-none"></div>
+
+  <div class="relative z-10 max-w-3xl space-y-4">
+    <div
+      class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 text-blue-200 text-xs font-semibold tracking-wide border border-blue-400/30 backdrop-blur-md">
+      <span>✦</span> TRẠM DỪNG CHÂN CỦA ĐỒNG ÂM
     </div>
-    <div class="stat">
-      <span class="stat-value">{{ all_tags|length if all_tags else 0 }}</span>
-      <span class="stat-label">Chủ đề &amp; Tag</span>
-    </div>
-    <div class="stat">
-      <span class="stat-value">{{ posts|sum(attribute='read_time') }}</span>
-      <span class="stat-label">Phút đọc</span>
+
+    <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight sm:leading-tight">
+      Lưu giữ những mảnh ghép trải nghiệm <br class="hidden sm:inline" />
+      <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-blue-200">và cảm xúc thường nhật.</span>
+    </h1>
+
+    <p class="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl">
+      Nơi cùng nhau ghi lại những bài học đắt giá, góc nhìn công nghệ sâu sắc và hành trình trưởng thành của lập trình viên.
+    </p>
+
+    <!-- Stats Bar -->
+    <div class="pt-4 flex flex-wrap items-center gap-4 sm:gap-8 border-t border-blue-800/60 mt-6">
+      <div>
+        <div class="text-2xl sm:text-3xl font-extrabold text-white">{{ pagination.total if pagination else posts|length }}</div>
+        <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Bài viết</div>
+      </div>
+      <div class="h-8 w-px bg-blue-800/80"></div>
+      <div>
+        <div class="text-2xl sm:text-3xl font-extrabold text-white">{{ all_tags|length if all_tags else 0 }}</div>
+        <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Chủ đề &amp; Tag</div>
+      </div>
+      <div class="h-8 w-px bg-blue-800/80"></div>
+      <div>
+        <div class="text-2xl sm:text-3xl font-extrabold text-white">{{ posts|sum(attribute='read_time') }}</div>
+        <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Phút đọc</div>
+      </div>
     </div>
   </div>
 </section>
 {% endif %}
 
-<!-- ── MAIN CONTAINER WITH 2-COLUMN LAYOUT ── -->
-<div class="posts-section {% if selected_tag %}tag-filtered-view fade-in{% endif %}">
+<!-- ── MAIN FEED CONTAINER ── -->
+<div class="space-y-8">
 
-  <!-- ── Breadcrumb khi đang lọc theo tag ── -->
+  <!-- ── Breadcrumb & Filter Banner khi đang lọc theo tag ── -->
   {% if selected_tag %}
-  <a href="{{ url_for('index') }}" class="post-back">
-    ← Quay lại tất cả bài viết
-  </a>
-
-  <div class="tag-hero-banner">
-    <div class="tag-hero-icon">🏷️</div>
-    <div class="tag-hero-info">
-      <span class="tag-hero-label">Danh mục / Thẻ chủ đề</span>
-      <h1 class="tag-hero-title">{{ selected_tag.name }}</h1>
-      <p class="tag-hero-count">Đang hiển thị <strong>{{ pagination.total if pagination else posts|length }}</strong>
-        bài viết trong chủ đề này</p>
+  <div
+    class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-colors">
+    <div class="flex items-center gap-4">
+      <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-sky-400 flex items-center justify-center text-2xl shrink-0">
+        🏷️
+      </div>
+      <div>
+        <span class="text-xs font-semibold text-blue-600 dark:text-sky-400 uppercase tracking-wider">Chủ đề bài viết</span>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{{ selected_tag.name }}</h1>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Hiển thị <strong>{{ pagination.total if pagination else posts|length }}</strong> bài viết trong danh mục này</p>
+      </div>
     </div>
-    <a href="{{ url_for('index') }}" class="tag-hero-clear-btn" title="Xóa bộ lọc">✕ Xóa lọc</a>
+    <a href="{{ url_for('index') }}"
+      class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition"
+      title="Xóa bộ lọc">
+      ✕ Xóa bộ lọc
+    </a>
   </div>
   {% endif %}
 
-  <!-- ── FEED NAVIGATION TABS (BẢNG FEED ĐỘNG) ── -->
+  <!-- ── FEED NAVIGATION TABS (Khám phá vs Dành cho bạn) ── -->
   {% if not selected_tag %}
-  <div class="feed-tabs-container">
-    <div class="feed-tabs-nav" role="tablist">
+  <div
+    class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+    <div class="flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-transparent dark:border-slate-800" role="tablist">
       <a href="{{ url_for('index', feed='all') }}"
-        class="feed-tab-btn {% if current_feed != 'for-you' %}active{% endif %}" role="tab"
-        aria-selected="{% if current_feed != 'for-you' %}true{% else %}false{% endif %}"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition {% if current_feed != 'for-you' %}bg-white dark:bg-slate-800 text-blue-700 dark:text-sky-400 shadow-xs{% else %}text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white{% endif %}"
+        role="tab" aria-selected="{% if current_feed != 'for-you' %}true{% else %}false{% endif %}"
         title="Tất cả bài viết mới nhất">
-        <span class="feed-tab-icon">🌐</span>
-        <span class="feed-tab-text">Khám phá</span>
+        <span>🌐</span> Khám phá
       </a>
       <a href="{{ url_for('index', feed='for-you') }}"
-        class="feed-tab-btn {% if current_feed == 'for-you' %}active{% endif %}" role="tab"
-        aria-selected="{% if current_feed == 'for-you' %}true{% else %}false{% endif %}"
-        title="Bài viết từ các tác giả bạn đang theo dõi">
-        <span class="feed-tab-icon">✨</span>
-        <span class="feed-tab-text">Dành cho bạn</span>
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition {% if current_feed == 'for-you' %}bg-white dark:bg-slate-800 text-blue-700 dark:text-sky-400 shadow-xs{% else %}text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white{% endif %}"
+        role="tab" aria-selected="{% if current_feed == 'for-you' %}true{% else %}false{% endif %}"
+        title="Bài viết từ các tác giả bạn theo dõi">
+        <span>✨</span> Dành cho bạn
         {% if current_user.is_authenticated and current_user.following_count() > 0 %}
-        <span class="feed-tab-badge" title="Đang theo dõi {{ current_user.following_count() }} tác giả">
+        <span class="px-1.5 py-0.2 text-[11px] bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-sky-300 rounded-full font-bold">
           {{ current_user.following_count() }}
         </span>
         {% endif %}
       </a>
     </div>
-  </div>
-  {% endif %}
 
-  <!-- ── CATEGORY / TAG PILLS FILTER BAR ── -->
-  <div class="category-filter-wrapper">
-    <div class="category-filter-header">
-      <span class="category-filter-label">📁 Khám phá theo danh mục:</span>
-    </div>
-    <div class="category-pills">
+    <!-- Category Pills Quick Carousel -->
+    <div class="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 sm:pb-0 scrollbar-none">
       <a href="{{ url_for('index') }}"
-        class="category-pill {% if not selected_tag and current_feed != 'for-you' %}active{% endif %}"
-        title="Tất cả bài viết">
+        class="px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition {% if not selected_tag and current_feed != 'for-you' %}bg-blue-600 text-white{% else %}bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800{% endif %}">
         ✦ Tất cả
       </a>
-
-      {% for tag in all_tags %}
+      {% for tag in all_tags[:6] %}
       <a href="{{ url_for('tag_posts', slug=tag.slug) }}"
-        class="category-pill {% if selected_tag and selected_tag.id == tag.id %}active{% endif %}"
-        title="Chủ đề: {{ tag.name }}">
+        class="px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition {% if selected_tag and selected_tag.id == tag.id %}bg-blue-600 text-white{% else %}bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800{% endif %}">
         🏷️ {{ tag.name }}
-        <span class="pill-count">{{ tag.post_count() }}</span>
       </a>
       {% endfor %}
     </div>
   </div>
+  {% endif %}
 
-  <!-- ═════════════════════════════════════════════ -->
-  <!-- ── 2-COLUMN LAYOUT: MAIN FEED + SIDEBAR ── -->
-  <!-- ═════════════════════════════════════════════ -->
-  <div class="home-two-col-layout">
+  <!-- ── 2-COLUMN LAYOUT: FEED + SIDEBAR ── -->
+  <div class="flex flex-col lg:flex-row gap-8 items-start">
 
-    <!-- ── LEFT COLUMN: POSTS FEED & PAGINATION ── -->
-    <div class="home-main-col">
+    <!-- ── LEFT COLUMN: POSTS FEED ── -->
+    <div class="flex-1 w-full space-y-6">
 
-      <!-- Section Header -->
-      <div class="section-header">
-        <h2 class="section-title">
+      <!-- Section Title & Counts -->
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl font-bold text-slate-900 dark:text-white">
           {% if selected_tag %}
-          📝 Bài viết về "{{ selected_tag.name }}"
+          Bài viết về "{{ selected_tag.name }}"
           {% elif current_feed == 'for-you' %}
-          ✨ Dành cho bạn — Bài viết từ tác giả đang theo dõi
+          Bảng tin từ tác giả bạn theo dõi
           {% else %}
-          📝 Bài viết mới nhất
+          Bài viết mới nhất
           {% endif %}
         </h2>
         {% if pagination and pagination.total > 0 %}
-        <span class="posts-count">Trang {{ pagination.page }}/{{ pagination.pages }} • {{ pagination.total }} bài</span>
+        <span class="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">
+          Trang {{ pagination.page }}/{{ pagination.pages }} • {{ pagination.total }} bài
+        </span>
         {% elif posts %}
-        <span class="posts-count">{{ posts|length }} bài</span>
+        <span class="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-md">{{ posts|length }} bài</span>
         {% endif %}
       </div>
 
-      <!-- Feed Callout khi chưa đăng nhập -->
+      <!-- Feed Callout khi chưa đăng nhập và xem Tab For You -->
       {% if current_feed == 'for-you' and not current_user.is_authenticated %}
-      <div class="feed-auth-callout fade-in">
-        <div class="callout-icon">✨</div>
-        <div class="callout-content">
-          <h3>Bảng tin cá nhân hóa dành riêng cho bạn</h3>
-          <p>Đăng nhập hoặc tạo tài khoản để theo dõi các lập trình viên yêu thích và không bỏ lỡ bài viết chuyên sâu
-            nào từ họ!</p>
-          <div class="callout-actions">
-            <a href="{{ url_for('login') }}" class="btn btn-primary">🔑 Đăng nhập ngay</a>
-            <a href="{{ url_for('register') }}" class="btn btn-ghost">✨ Tạo tài khoản</a>
-          </div>
+      <div class="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-blue-950/40 border border-blue-100 dark:border-slate-800 rounded-2xl space-y-3">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">✨</span>
+          <h3 class="font-bold text-slate-900 dark:text-white text-base">Bảng tin cá nhân hóa dành riêng cho bạn</h3>
+        </div>
+        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+          Đăng nhập hoặc tạo tài khoản để theo dõi các lập trình viên yêu thích và nhận ngay thông báo khi có bài viết chuyên sâu mới nhất!
+        </p>
+        <div class="flex items-center gap-3 pt-2">
+          <a href="{{ url_for('login') }}"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-xs transition">
+            🔑 Đăng nhập ngay
+          </a>
+          <a href="{{ url_for('register') }}"
+            class="px-4 py-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm rounded-xl border border-slate-200 dark:border-slate-700 transition">
+            ✨ Tạo tài khoản
+          </a>
         </div>
       </div>
       {% endif %}
 
-      <!-- Posts Grid -->
-      <div class="posts-grid stagger">
+      <!-- ── POSTS GRID (2 COLUMNS) ── -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         {% if posts %}
         {% for post in posts %}
-        <div class="post-card {% if post.get_cover_image() %}post-card-has-cover{% endif %}"
+        <article
+          class="post-card group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-lg dark:hover:shadow-blue-950/30 hover:-translate-y-1 transition duration-200 overflow-hidden flex flex-col cursor-pointer"
           data-post-url="{{ url_for('post_detail', post_id=post.id) }}" role="article" tabindex="0"
           aria-label="{{ post.title }}">
+
           {% if post.get_cover_image() %}
-          <div class="card-cover-img-wrapper">
-            <img src="{{ post.get_cover_image() }}" alt="{{ post.title }}" class="card-cover-img"
+          <div class="w-full h-48 sm:h-52 overflow-hidden bg-slate-100 dark:bg-slate-800 relative">
+            <img src="{{ post.get_cover_image() }}" alt="{{ post.title }}"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               style="object-position: {{ post.get_cover_position() }};" loading="lazy"
-              onerror="this.closest('.card-cover-img-wrapper').style.display='none'" />
+              onerror="this.parentElement.style.display='none'" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
           </div>
           {% endif %}
 
-          <div class="card-meta">
-            <div class="card-tags-group">
-              {% if post.tags %}
-              {% for tag in post.tags[:2] %}
-              <a href="{{ url_for('tag_posts', slug=tag.slug) }}"
-                class="card-tag-pill {% if selected_tag and selected_tag.id == tag.id %}tag-highlight{% endif %}"
-                title="Lọc theo tag {{ tag.name }}">
-                🏷️ {{ tag.name }}
-              </a>
-              {% endfor %}
+          <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+            <div class="space-y-2.5">
+              <!-- Tags & Date row -->
+              <div class="flex items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  {% if post.tags %}
+                  {% for tag in post.tags[:2] %}
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-sky-300 font-medium border border-blue-100/50 dark:border-blue-900/40">
+                    🏷️ {{ tag.name }}
+                  </span>
+                  {% endfor %}
+                  {% else %}
+                  <span
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                    {{ post.category }}
+                  </span>
+                  {% endif %}
+                </div>
+                <time class="text-slate-400 dark:text-slate-500 whitespace-nowrap">{{ post.short_date() }}</time>
+              </div>
+
+              <!-- Title -->
+              <h3
+                class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-sky-400 transition leading-snug line-clamp-2">
+                <a href="{{ url_for('post_detail', post_id=post.id) }}" class="card-title-link focus:outline-none">
+                  {{ post.title }}
+                </a>
+              </h3>
+
+              <!-- Summary -->
+              <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                {{ post.summary }}
+              </p>
+            </div>
+
+            <!-- Engagement & Actions -->
+            <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+
+              <!-- Author Info -->
+              {% if post.author %}
+              <div class="flex items-center gap-2">
+                <img src="{{ post.author.get_avatar() }}" alt="{{ post.author.username }}"
+                  class="w-6 h-6 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700" />
+                <span class="font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[110px]">{{ post.author.username }}</span>
+              </div>
               {% else %}
-              <span class="card-category">{{ post.category }}</span>
+              <span class="font-semibold text-slate-500 dark:text-slate-400">DevBlog</span>
               {% endif %}
+
+              <!-- Engagement row -->
+              <div class="flex items-center gap-3">
+                <!-- Like Button -->
+                <button
+                  class="card-like-btn flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 transition {% if post.is_liked_by(current_user) %}liked text-rose-600 dark:text-rose-400 font-bold{% endif %}"
+                  id="like-btn-{{ post.id }}" data-post-id="{{ post.id }}"
+                  data-liked="{{ 'true' if post.is_liked_by(current_user) else 'false' }}" title="Thích bài viết"
+                  type="button" onclick="event.stopPropagation()">
+                  <span class="like-heart">❤️</span>
+                  <span class="like-count" id="like-count-{{ post.id }}">{{ post.like_count() }}</span>
+                </button>
+
+                <!-- Comments Count -->
+                <span class="flex items-center gap-1">
+                  <span>💬</span>
+                  <span>{{ post.comment_count() }}</span>
+                </span>
+
+                <!-- Read Time -->
+                <span class="hidden sm:inline-flex items-center text-slate-400 dark:text-slate-500">
+                  🕐 {{ post.read_time }}p
+                </span>
+
+                <!-- Bookmark Button -->
+                {% if current_user.is_authenticated %}
+                <button type="button"
+                  class="card-bookmark-btn p-1 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-950/40 hover:text-amber-600 dark:hover:text-amber-400 transition {% if current_user.is_bookmarked(post) %}bookmarked text-amber-500 font-bold{% endif %}"
+                  id="bookmark-btn-{{ post.id }}" data-post-id="{{ post.id }}"
+                  data-bookmarked="{{ 'true' if current_user.is_bookmarked(post) else 'false' }}"
+                  title="{% if current_user.is_bookmarked(post) %}Bỏ lưu{% else %}Lưu bài{% endif %}"
+                  onclick="event.stopPropagation()">
+                  <span>🔖</span>
+                </button>
+                {% endif %}
+              </div>
+
             </div>
-            <span class="card-date">{{ post.short_date() }}</span>
+
           </div>
-
-          <h3 class="card-title">
-            <a href="{{ url_for('post_detail', post_id=post.id) }}" class="card-title-link">{{ post.title }}</a>
-          </h3>
-
-          <p class="card-summary">{{ post.summary }}</p>
-
-          <div class="card-engagement-row">
-            <button class="card-like-btn {% if post.is_liked_by(current_user) %}liked{% endif %}"
-              id="like-btn-{{ post.id }}" data-post-id="{{ post.id }}"
-              data-liked="{{ 'true' if post.is_liked_by(current_user) else 'false' }}" title="Thích bài viết"
-              type="button">
-              <span class="like-heart">❤️</span>
-              <span class="like-count" id="like-count-{{ post.id }}">{{ post.like_count() }}</span>
-            </button>
-
-            <a href="{{ url_for('post_detail', post_id=post.id) }}#comments-section" class="card-comment-link"
-              title="Xem bình luận">
-              <span>💬</span>
-              <span>{{ post.comment_count() }}</span>
-            </a>
-
-            {% if current_user.is_authenticated %}
-            <button type="button"
-              class="card-bookmark-btn {% if current_user.is_bookmarked(post) %}bookmarked{% endif %}"
-              id="bookmark-btn-{{ post.id }}" data-post-id="{{ post.id }}"
-              data-bookmarked="{{ 'true' if current_user.is_bookmarked(post) else 'false' }}"
-              title="{% if current_user.is_bookmarked(post) %}Bỏ lưu{% else %}Lưu bài{% endif %}">
-              <span>🔖</span>
-            </button>
-            {% endif %}
-          </div>
-
-          <div class="card-footer">
-            {% if post.author %}
-            <a href="{{ url_for('user_profile', username=post.author.username) }}" class="card-author-link"
-              title="Trang cá nhân của {{ post.author.username }}">
-              <img src="{{ post.author.get_avatar() }}" alt="{{ post.author.username }}" class="author-avatar-xs" />
-              <span class="author-name">{{ post.author.username }}</span>
-            </a>
-            {% else %}
-            <span class="author-name text-muted">DevBlog</span>
-            {% endif %}
-
-            <div class="card-footer-right">
-              <span class="card-read-time">🕐 {{ post.read_time }} phút</span>
-              <a href="{{ url_for('post_detail', post_id=post.id) }}" class="card-arrow" title="Đọc bài viết">→</a>
-            </div>
-          </div>
-        </div>
+        </article>
         {% endfor %}
 
-
         {% else %}
-        <!-- Empty states -->
-        {% if current_feed == 'for-you' and current_user.is_authenticated %}
-        <div class="empty-state feed-empty-state fade-in">
-          <span class="empty-icon">🛰️</span>
-          <h3>Bảng tin "Dành cho bạn" đang chờ đón</h3>
-          <p>Bạn chưa theo dõi tác giả nào hoặc các tác giả bạn đang theo dõi chưa xuất bản bài viết mới. Hãy khám phá
-            và theo dõi những tác giả nổi bật!</p>
-        </div>
-        {% elif not (current_feed == 'for-you' and not current_user.is_authenticated) %}
-        <div class="empty-state">
-          <span class="empty-icon">📭</span>
-          <h3>Chưa có bài viết nào</h3>
+        <!-- Empty Feed State -->
+        <div class="col-span-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-4">
+          <div class="text-4xl">📭</div>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-slate-200">Chưa có bài viết nào</h3>
           {% if selected_tag %}
-          <p>Chưa có bài viết nào thuộc chủ đề <strong>{{ selected_tag.name }}</strong>.</p>
-          <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">← Xem tất cả bài viết</a>
+          <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Chưa có bài viết nào thuộc chủ đề <strong>{{ selected_tag.name }}</strong>.</p>
+          <a href="{{ url_for('index') }}"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition">
+            ← Xem tất cả bài viết
+          </a>
           {% else %}
-          <p>Hãy bắt đầu bằng cách đăng bài viết đầu tiên của bạn!</p>
-          <a href="{{ url_for('post_new') }}" class="btn btn-primary btn-lg">✏️ Viết bài đầu tiên</a>
+          <p class="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">Hãy bắt đầu bằng cách chia sẻ bài viết đầu tiên của bạn lên DevBlog!</p>
+          <a href="{{ url_for('post_new') }}"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition">
+            ✏️ Viết bài đầu tiên
+          </a>
           {% endif %}
         </div>
-        {% endif %}
         {% endif %}
       </div>
 
-      <!-- ── PAGINATION (PHÂN TRANG THÔNG MINH) ── -->
+      <!-- ── PAGINATION ── -->
       {% if pagination and pagination.pages > 1 %}
-      <nav class="pagination-wrapper" aria-label="Điều hướng trang bài viết">
-        <!-- Previous Button -->
+      <nav class="pt-6 flex items-center justify-center gap-2" aria-label="Điều hướng trang bài viết">
+        <!-- Previous -->
         {% if pagination.has_prev %}
         <a href="{% if selected_tag %}{{ url_for('tag_posts', slug=selected_tag.slug, page=pagination.prev_num) }}{% else %}{{ url_for('index', feed=current_feed, page=pagination.prev_num) }}{% endif %}"
-          class="pagination-btn pagination-prev" title="Trang trước">
+          class="px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-semibold transition">
           ← Trước
         </a>
         {% else %}
-        <span class="pagination-btn pagination-disabled">← Trước</span>
+        <span class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 text-sm font-semibold cursor-not-allowed border border-transparent dark:border-slate-800/50">
+          ← Trước
+        </span>
         {% endif %}
 
-        <!-- Page Number Links -->
-        <div class="pagination-pages">
+        <!-- Page Numbers -->
+        <div class="flex items-center gap-1">
           {% for p in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
           {% if p %}
           {% if p == pagination.page %}
-          <span class="pagination-number active" aria-current="page">{{ p }}</span>
+          <span
+            class="w-9 h-9 flex items-center justify-center rounded-xl bg-blue-600 text-white font-bold text-sm shadow-xs">
+            {{ p }}
+          </span>
           {% else %}
           <a href="{% if selected_tag %}{{ url_for('tag_posts', slug=selected_tag.slug, page=p) }}{% else %}{{ url_for('index', feed=current_feed, page=p) }}{% endif %}"
-            class="pagination-number">
+            class="w-9 h-9 flex items-center justify-center rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 font-semibold text-sm transition">
             {{ p }}
           </a>
           {% endif %}
           {% else %}
-          <span class="pagination-ellipsis">…</span>
+          <span class="px-1 text-slate-400 font-bold">…</span>
           {% endif %}
           {% endfor %}
         </div>
 
-        <!-- Next Button -->
+        <!-- Next -->
         {% if pagination.has_next %}
         <a href="{% if selected_tag %}{{ url_for('tag_posts', slug=selected_tag.slug, page=pagination.next_num) }}{% else %}{{ url_for('index', feed=current_feed, page=pagination.next_num) }}{% endif %}"
-          class="pagination-btn pagination-next" title="Trang tiếp theo">
+          class="px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-semibold transition">
           Sau →
         </a>
         {% else %}
-        <span class="pagination-btn pagination-disabled">Sau →</span>
+        <span class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-600 text-sm font-semibold cursor-not-allowed border border-transparent dark:border-slate-800/50">
+          Sau →
+        </span>
         {% endif %}
       </nav>
       {% endif %}
 
-    </div><!-- /home-main-col -->
+    </div>
 
     <!-- ── RIGHT COLUMN: SIDEBAR WIDGETS ── -->
-    <aside class="home-sidebar-col">
+    <aside class="w-full lg:w-80 shrink-0 space-y-6">
 
-      <!-- Widget 1: Popular Posts (Bài viết nổi bật) -->
+      <!-- Widget 1: Popular Posts -->
       {% if popular_posts %}
-      <div class="sidebar-widget">
-        <div class="sidebar-widget-header">
-          <h3 class="sidebar-widget-title">
-            <span>🔥</span> Bài viết phổ biến
-          </h3>
-        </div>
-        <div class="sidebar-widget-body">
-          <div class="popular-posts-list">
-            {% for p in popular_posts %}
-            <div class="popular-post-item">
-              <span class="popular-rank">{{ loop.index }}</span>
-              <div class="popular-post-info">
-                <a href="{{ url_for('post_detail', post_id=p.id) }}" class="popular-post-title" title="{{ p.title }}">
-                  {{ p.title }}
-                </a>
-                <div class="popular-post-meta">
-                  <span class="popular-meta-author">{{ p.author.username if p.author else 'DevBlog' }}</span>
-                  <span>•</span>
-                  <span class="popular-meta-stat">❤️ {{ p.like_count() }}</span>
-                  <span>•</span>
-                  <span class="popular-meta-stat">🕐 {{ p.read_time }}p</span>
-                </div>
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-4 transition-colors">
+        <h3 class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+          <span>🔥</span> Bài viết phổ biến
+        </h3>
+        <div class="space-y-3.5">
+          {% for p in popular_posts %}
+          <div class="flex items-start gap-3 group">
+            <span
+              class="w-6 h-6 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-blue-600 group-hover:text-white font-extrabold text-xs flex items-center justify-center shrink-0 transition">
+              {{ loop.index }}
+            </span>
+            <div class="min-w-0 flex-1 space-y-1">
+              <a href="{{ url_for('post_detail', post_id=p.id) }}"
+                class="text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-sky-400 transition line-clamp-2 leading-snug">
+                {{ p.title }}
+              </a>
+              <div class="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-2">
+                <span>{{ p.author.username if p.author else 'DevBlog' }}</span>
+                <span>•</span>
+                <span>❤️ {{ p.like_count() }}</span>
+                <span>•</span>
+                <span>🕐 {{ p.read_time }}p</span>
               </div>
-              {% if p.get_cover_image() %}
-              <a href="{{ url_for('post_detail', post_id=p.id) }}" class="popular-thumb-link" tabindex="-1">
-                <img src="{{ p.get_cover_image() }}" alt="{{ p.title }}" class="popular-thumb-img"
-                  style="object-position: {{ p.get_cover_position() }};" loading="lazy" />
-              </a>
-              {% endif %}
             </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-      {% endif %}
-
-      <!-- Widget 2: Tags Cloud (Chủ đề khám phá) -->
-      {% if all_tags %}
-      <div class="sidebar-widget">
-        <div class="sidebar-widget-header">
-          <h3 class="sidebar-widget-title">
-            <span>🏷️</span> Chủ đề nổi bật
-          </h3>
-        </div>
-        <div class="sidebar-widget-body">
-          <div class="sidebar-tags-cloud">
-            {% for tag in all_tags %}
-            <a href="{{ url_for('tag_posts', slug=tag.slug) }}"
-              class="sidebar-tag-pill {% if selected_tag and selected_tag.id == tag.id %}active{% endif %}"
-              title="Xem các bài về {{ tag.name }}">
-              <span class="tag-name">{{ tag.name }}</span>
-              <span class="tag-count">{{ tag.post_count() }}</span>
+            {% if p.get_cover_image() %}
+            <a href="{{ url_for('post_detail', post_id=p.id) }}"
+              class="shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800">
+              <img src="{{ p.get_cover_image() }}" alt="{{ p.title }}" class="w-full h-full object-cover"
+                loading="lazy" />
             </a>
-            {% endfor %}
+            {% endif %}
           </div>
+          {% endfor %}
         </div>
       </div>
       {% endif %}
 
-      <!-- Widget 3: Top Creators (Tác giả tiêu biểu) -->
-      {% if top_creators %}
-      <div class="sidebar-widget">
-        <div class="sidebar-widget-header">
-          <h3 class="sidebar-widget-title">
-            <span>✨</span> Tác giả tiêu biểu
-          </h3>
+      <!-- Widget 2: Tags Cloud -->
+      {% if all_tags %}
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-3 transition-colors">
+        <h3 class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+          <span>🏷️</span> Chủ đề nổi bật
+        </h3>
+        <div class="flex flex-wrap gap-1.5">
+          {% for tag in all_tags %}
+          <a href="{{ url_for('tag_posts', slug=tag.slug) }}"
+            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition {% if selected_tag and selected_tag.id == tag.id %}bg-blue-600 text-white{% else %}bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-blue-700 dark:hover:text-sky-300 border border-slate-200/60 dark:border-slate-700{% endif %}">
+            <span>{{ tag.name }}</span>
+            <span
+              class="text-[10px] px-1 py-0.2 rounded-full {% if selected_tag and selected_tag.id == tag.id %}bg-blue-700 text-white{% else %}bg-slate-200/70 dark:bg-slate-700 text-slate-600 dark:text-slate-300{% endif %}">{{ tag.post_count() }}</span>
+          </a>
+          {% endfor %}
         </div>
-        <div class="sidebar-widget-body">
-          <div class="sidebar-creators-list">
-            {% for creator in top_creators %}
-            <div class="sidebar-creator-item">
-              <a href="{{ url_for('user_profile', username=creator.username) }}" class="creator-avatar-link">
-                <img src="{{ creator.get_avatar() }}" alt="{{ creator.username }}" class="creator-avatar" />
+      </div>
+      {% endif %}
+
+      <!-- Widget 3: Top Creators -->
+      {% if top_creators %}
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs space-y-4 transition-colors">
+        <h3 class="font-bold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+          <span>✨</span> Tác giả tiêu biểu
+        </h3>
+        <div class="space-y-3">
+          {% for creator in top_creators %}
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <a href="{{ url_for('user_profile', username=creator.username) }}" class="shrink-0">
+                <img src="{{ creator.get_avatar() }}" alt="{{ creator.username }}"
+                  class="w-9 h-9 rounded-full object-cover ring-1 ring-slate-200 dark:ring-slate-700" />
               </a>
-              <div class="creator-details">
-                <a href="{{ url_for('user_profile', username=creator.username) }}" class="creator-name">
+              <div class="min-w-0">
+                <a href="{{ url_for('user_profile', username=creator.username) }}"
+                  class="text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-sky-400 truncate block">
                   {{ creator.username }}
                 </a>
-                <span class="creator-bio">{{ creator.bio[:45] if creator.bio else 'Lập trình viên' }}...</span>
+                <span class="text-[11px] text-slate-400 dark:text-slate-500 truncate block">{{ creator.bio[:30] if creator.bio else 'Lập trình viên' }}...</span>
               </div>
-              {% if current_user.is_authenticated and current_user.id != creator.id %}
-              <button type="button"
-                class="btn-follow-action btn-follow-sm {% if current_user.is_following(creator) %}following{% endif %}"
-                data-username="{{ creator.username }}"
-                data-following="{{ 'true' if current_user.is_following(creator) else 'false' }}"
-                title="Theo dõi tác giả">
-                <span class="follow-icon">{% if current_user.is_following(creator) %}✓{% else %}＋{% endif %}</span>
-              </button>
-              {% endif %}
             </div>
-            {% endfor %}
+
+            {% if current_user.is_authenticated and current_user.id != creator.id %}
+            <button type="button"
+              class="btn-follow-action shrink-0 px-2.5 py-1 text-xs font-semibold rounded-lg border transition {% if current_user.is_following(creator) %}bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700{% else %}bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-sky-300 border-blue-200 dark:border-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900/80{% endif %}"
+              data-username="{{ creator.username }}"
+              data-following="{{ 'true' if current_user.is_following(creator) else 'false' }}" title="Theo dõi tác giả">
+              <span class="follow-icon">{% if current_user.is_following(creator) %}✓{% else %}＋{% endif %}</span>
+            </button>
+            {% endif %}
           </div>
+          {% endfor %}
         </div>
       </div>
       {% endif %}
 
-      <!-- Widget 4: Community / Call to action -->
-      <div class="sidebar-widget sidebar-widget-cta">
-        <div class="cta-widget-glow"></div>
-        <div class="cta-widget-content">
-          <span class="cta-badge">✦ Chia sẻ cùng cộng đồng</span>
-          <h4>Bạn có ý tưởng hay kinh nghiệm lập trình thú vị?</h4>
-          <p>Hãy viết bài và truyền cảm hứng cho hàng ngàn lập trình viên khác ngay hôm nay.</p>
-          <a href="{{ url_for('post_new') }}" class="btn btn-primary btn-sm btn-block">
+      <!-- Widget 4: Community CTA -->
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 text-white p-6 shadow-md space-y-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-blue-200 flex items-center gap-1.5">
+          ✦ Chia sẻ kinh nghiệm
+        </span>
+        <h4 class="font-extrabold text-base leading-snug">Bạn có ý tưởng hay kinh nghiệm lập trình thú vị?</h4>
+        <p class="text-xs text-blue-100 leading-relaxed">
+          Hãy viết bài và truyền cảm hứng cho hàng ngàn lập trình viên khác ngay hôm nay.
+        </p>
+        <div class="pt-1">
+          <a href="{{ url_for('post_new') }}"
+            class="inline-flex items-center justify-center w-full py-2.5 px-4 bg-white hover:bg-slate-50 text-blue-700 font-bold text-xs rounded-xl shadow-xs transition active:scale-95">
             ✏️ Viết bài viết mới
           </a>
         </div>
       </div>
 
-    </aside><!-- /home-sidebar-col -->
+    </aside>
 
-  </div><!-- /home-two-col-layout -->
+  </div>
 
-  <!-- ── SUGGESTED AUTHORS SECTION (Khi ở tab For You hoặc khi Feed trống) ── -->
+  <!-- ── SUGGESTED AUTHORS SECTION ── -->
   {% if suggested_authors and (current_feed == 'for-you' or not posts) %}
-  <div class="suggested-authors-section fade-in">
-    <div class="section-header">
-      <h3 class="section-title">
+  <div class="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 space-y-6">
+    <div class="flex items-center justify-between">
+      <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
         <span>👥</span> Tác giả gợi ý dành cho bạn
       </h3>
-      <span class="posts-count">Khám phá cộng đồng</span>
+      <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Khám phá cộng đồng</span>
     </div>
 
-    <div class="suggested-authors-grid">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {% for author in suggested_authors %}
-      <div class="author-suggest-card" id="author-card-{{ author.username }}">
-        <a href="{{ url_for('user_profile', username=author.username) }}" class="author-suggest-avatar-link">
-          <img src="{{ author.get_avatar() }}" alt="{{ author.username }}" class="author-suggest-avatar" />
-        </a>
-        <div class="author-suggest-info">
-          <a href="{{ url_for('user_profile', username=author.username) }}" class="author-suggest-name">
-            {{ author.username }}
+      <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-xs flex flex-col justify-between space-y-4 transition-colors"
+        id="author-card-{{ author.username }}">
+        <div class="flex items-center gap-3">
+          <a href="{{ url_for('user_profile', username=author.username) }}">
+            <img src="{{ author.get_avatar() }}" alt="{{ author.username }}"
+              class="w-12 h-12 rounded-full object-cover ring-2 ring-blue-500/20" />
           </a>
-          <span class="author-suggest-bio">{{ author.bio or 'Thành viên DevBlog' }}</span>
-          <div class="author-suggest-stats">
-            <span>📝 {{ author.posts.count() }} bài</span>
-            <span>•</span>
-            <span id="author-followers-count-{{ author.username }}">👥 {{ author.followers_count() }} người theo
-              dõi</span>
+          <div class="min-w-0 flex-1">
+            <a href="{{ url_for('user_profile', username=author.username) }}"
+              class="font-bold text-slate-900 dark:text-white text-sm hover:text-blue-600 dark:hover:text-sky-400 block truncate">
+              {{ author.username }}
+            </a>
+            <span class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{{ author.bio or 'Thành viên DevBlog' }}</span>
+            <div class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+              📝 {{ author.posts.count() }} bài • <span id="author-followers-count-{{ author.username }}">👥 {{ author.followers_count() }} theo dõi</span>
+            </div>
           </div>
         </div>
 
-        <div class="author-suggest-action">
+        <div>
           {% if current_user.is_authenticated %}
-          <button type="button" class="btn-follow-action {% if current_user.is_following(author) %}following{% endif %}"
+          <button type="button"
+            class="btn-follow-action w-full py-1.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 transition {% if current_user.is_following(author) %}bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300{% else %}bg-blue-600 hover:bg-blue-700 text-white shadow-xs{% endif %}"
             data-username="{{ author.username }}"
             data-following="{{ 'true' if current_user.is_following(author) else 'false' }}" title="Theo dõi tác giả">
             <span class="follow-icon">{% if current_user.is_following(author) %}✓{% else %}＋{% endif %}</span>
-            <span class="follow-text">{% if current_user.is_following(author) %}Đang theo dõi{% else %}Theo dõi{% endif
-              %}</span>
+            <span class="follow-text">{% if current_user.is_following(author) %}Đang theo dõi{% else %}Theo dõi{% endif %}</span>
           </button>
           {% else %}
-          <a href="{{ url_for('login') }}" class="btn-follow-action" title="Đăng nhập để theo dõi">
+          <a href="{{ url_for('login') }}"
+            class="w-full py-1.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition"
+            title="Đăng nhập để theo dõi">
             <span class="follow-icon">＋</span>
             <span class="follow-text">Theo dõi</span>
           </a>

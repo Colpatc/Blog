@@ -3,24 +3,32 @@
 {% block title %}Xóa bài viết — DevBlog{% endblock %}
 
 {% block content %}
-<div class="delete-page fade-in">
-  <div class="delete-card">
-    <span class="delete-icon">🗑️</span>
-    <h2>Xóa bài viết?</h2>
-    <p>Bạn sắp xóa vĩnh viễn bài viết:</p>
-    <p class="delete-title-preview">"{{ post.title }}"</p>
-    <p>Hành động này <strong>không thể hoàn tác</strong>. Bài viết sẽ bị xóa khỏi database.</p>
+<div class="max-w-md mx-auto py-12 fade-in">
+  <div class="bg-white dark:bg-slate-900 rounded-3xl border border-red-200/80 dark:border-red-900/60 shadow-xl p-8 sm:p-10 text-center space-y-6 transition-colors">
+    <div class="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center text-2xl mx-auto ring-8 ring-red-50/50 dark:ring-red-950/30">
+      🗑️
+    </div>
 
-    <div class="delete-actions">
-      <form method="POST" id="confirm-delete-form">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-        <button type="submit" class="btn btn-danger btn-lg" id="confirm-delete-btn">
+    <div class="space-y-2">
+      <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Xóa bài viết?</h1>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Bạn có chắc chắn muốn xóa vĩnh viễn bài viết này?</p>
+      <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-2 mt-2">
+        "{{ post.title }}"
+      </div>
+      <p class="text-xs text-red-600 dark:text-red-400 font-medium pt-1">
+        ⚠️ Hành động này không thể hoàn tác. Toàn bộ nội dung, tương tác và bình luận liên quan sẽ bị xóa hoàn toàn.
+      </p>
+    </div>
+
+    <div class="flex items-center justify-center gap-3 pt-2">
+      <a href="{{ url_for('post_detail', post_id=post.id) }}" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-xs transition" id="cancel-delete-btn">
+        ← Hủy bỏ
+      </a>
+      <form method="POST" id="confirm-delete-form" class="inline">
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md hover:shadow-lg transition active:scale-95 cursor-pointer" id="confirm-delete-btn">
           🗑️ Xác nhận xóa
         </button>
       </form>
-      <a href="{{ url_for('post_detail', post_id=post.id) }}" class="btn btn-ghost btn-lg" id="cancel-delete-btn">
-        ← Quay lại
-      </a>
     </div>
   </div>
 </div>

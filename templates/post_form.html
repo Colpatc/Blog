@@ -5,55 +5,61 @@
 {% endblock %}
 
 {% block content %}
-<div class="form-page fade-in">
+<div class="max-w-4xl mx-auto space-y-6 fade-in">
 
   <!-- ── Header ── -->
-  <div class="form-header">
-    <a href="{{ url_for('index') }}" class="post-back">← Về trang chủ</a>
-    <h1>
-      {% if mode == 'edit' %}✏️ Chỉnh sửa bài viết{% else %}✨ Viết bài mới{% endif %}
-    </h1>
-    <p>
-      {% if mode == 'edit' %}
-        Cập nhật nội dung bài: <em>{{ post.title }}</em>
-      {% else %}
-        Chia sẻ kiến thức và kinh nghiệm của bạn với mọi người
-      {% endif %}
-    </p>
+  <div class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
+    <div>
+      <a href="{{ url_for('index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition mb-2">
+        ← Về trang chủ
+      </a>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+        {% if mode == 'edit' %}✏️ Chỉnh sửa bài viết{% else %}✨ Viết bài mới{% endif %}
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+        {% if mode == 'edit' %}
+          Cập nhật nội dung cho bài viết <em class="text-slate-700 dark:text-slate-300">"{{ post.title }}"</em>
+        {% else %}
+          Chia sẻ kiến thức chuyên sâu và trải nghiệm quý báu cùng cộng đồng
+        {% endif %}
+      </p>
+    </div>
   </div>
 
-  <!-- ── Form ── -->
-  <form method="POST" enctype="multipart/form-data" class="blog-form" id="post-form" novalidate>
+  <!-- ── Main Form Card ── -->
+  <form method="POST" enctype="multipart/form-data" class="space-y-6" id="post-form" novalidate>
     {{ form.hidden_tag() }}
 
-    <!-- ── Cover Image Studio (Upload / URL + Interactive Repositioning) ── -->
-    <div class="form-group cover-studio-group">
-      <div class="form-label-row">
-        <label class="form-label" for="cover_image">
-          🖼️ Ảnh bìa bài viết
-          <span class="form-label-hint">tùy chọn</span>
+    <!-- ── Cover Image Studio ── -->
+    <div class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4 transition-colors">
+      <div class="flex items-center justify-between">
+        <label class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>🖼️</span> Ảnh bìa bài viết
+          <span class="text-xs font-normal text-slate-400 dark:text-slate-500">(Tùy chọn)</span>
         </label>
-        <span class="form-label-badge">Tải file hoặc Dán link URL</span>
+        <span class="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-1 rounded-full border border-blue-100 dark:border-blue-900/50">Tải file hoặc Dán URL</span>
       </div>
 
       <!-- Tab Switcher: Upload File vs Direct URL -->
-      <div class="image-source-tabs" role="tablist">
-        <button type="button" class="source-tab-btn active" id="tab-btn-file" onclick="switchImageTab('file')">
-          📁 Tải ảnh từ máy tính
+      <div class="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+        <button type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer" id="tab-btn-file" onclick="switchImageTab('file')" style="background-color: #2563eb; color: #ffffff;">
+          📁 Tải từ máy tính
         </button>
-        <button type="button" class="source-tab-btn" id="tab-btn-url" onclick="switchImageTab('url')">
-          🔗 Dán liên kết URL (Unsplash, Imgur...)
+        <button type="button" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer" id="tab-btn-url" onclick="switchImageTab('url')">
+          🔗 Dán URL hình ảnh
         </button>
       </div>
 
       <!-- Tab Pane 1: File Upload (Drag & Drop) -->
-      <div class="image-tab-pane active" id="pane-file">
-        <div class="cover-dropzone" id="cover-dropzone" onclick="document.getElementById('cover_file').click()">
-          <input type="file" id="cover_file" name="cover_file" accept="image/png, image/jpeg, image/webp, image/gif" class="cover-file-input" style="display:none;" />
-          <div class="dropzone-content">
-            <div class="dropzone-icon">☁️</div>
-            <p class="dropzone-title">Nhấp để chọn file hoặc <strong>Kéo thả ảnh vào đây</strong></p>
-            <p class="dropzone-hint">Hỗ trợ định dạng JPG, PNG, WEBP, GIF (Tối đa 16MB)</p>
+      <div class="image-tab-pane" id="pane-file">
+        <div class="border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/60 dark:bg-slate-800/50 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 rounded-2xl p-8 text-center cursor-pointer transition" id="cover-dropzone" onclick="document.getElementById('cover_file').click()">
+          <input type="file" id="cover_file" name="cover_file" accept="image/png, image/jpeg, image/webp, image/gif" class="hidden" />
+          <div class="space-y-2">
+            <div class="text-3xl">☁️</div>
+            <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Nhấp để chọn file hoặc <strong class="text-blue-600 dark:text-blue-400">kéo thả ảnh vào đây</strong>
+            </p>
+            <p class="text-xs text-slate-400 dark:text-slate-500">Hỗ trợ JPG, PNG, WEBP, GIF (Tối đa 16MB)</p>
           </div>
         </div>
       </div>
@@ -61,48 +67,47 @@
       <!-- Tab Pane 2: URL Input -->
       <div class="image-tab-pane" id="pane-url" style="display: none;">
         {{ form.cover_image(
-            class='form-input',
+            class='w-full px-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800/90 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition placeholder-slate-400 dark:placeholder-slate-500',
             id='cover_image',
             placeholder='https://images.unsplash.com/... hoặc dán URL ảnh bất kỳ',
             autocomplete='off'
         ) }}
-        <p class="form-hint">
-          📸 Dán URL hình ảnh từ Unsplash, Pinterest, Imgur... Kích thước khuyến nghị: <strong>1200 × 630px</strong>.
+        <p class="text-xs text-slate-400 dark:text-slate-500 mt-1.5">
+          📸 Kích thước khuyến nghị: <strong>1200 × 630px</strong>.
         </p>
       </div>
 
       {% for error in form.cover_image.errors %}
-        <p class="field-error">⚠️ {{ error }}</p>
+        <p class="text-xs text-red-500 font-medium">⚠️ {{ error }}</p>
       {% endfor %}
 
       <!-- ── Interactive Repositioning Studio & Preview ── -->
-      <div class="cover-studio-container" id="cover-studio-container"
+      <div class="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800" id="cover-studio-container"
            style="{% if (mode == 'edit' and post.cover_image) or form.cover_image.data %}display:block{% else %}display:none{% endif %}">
         
-        <div class="studio-header">
-          <div class="studio-title">
-            <span>🎛️ Căn chỉnh khung hình ảnh bìa</span>
-            <span class="position-badge" id="position-badge">📍 Vị trí: 50% 50%</span>
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-200">
+            <span>🎛️ Căn chỉnh khung hình</span>
+            <span class="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-mono text-[11px]" id="position-badge">📍 Vị trí: 50% 50%</span>
           </div>
-          <button type="button" class="btn-clear-cover" id="cover-remove-btn" title="Gỡ bỏ ảnh bìa">
+          <button type="button" class="px-2.5 py-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition" id="cover-remove-btn" title="Gỡ bỏ ảnh bìa">
             ✕ Xóa ảnh
           </button>
         </div>
 
         <!-- Interactive Drag Viewport -->
-        <div class="cover-drag-viewport" id="cover-drag-viewport" title="Nhấp giữ và kéo để di chuyển ảnh">
+        <div class="relative w-full h-52 sm:h-64 rounded-2xl overflow-hidden bg-slate-900 cursor-grab active:cursor-grabbing select-none" id="cover-drag-viewport" title="Nhấp giữ và kéo để di chuyển ảnh">
           <img
             id="cover-preview-img"
             src="{{ post.get_cover_image() if mode == 'edit' and post.get_cover_image() else '' }}"
             alt="Ảnh bìa xem trước"
-            class="cover-preview-img"
+            class="w-full h-full object-cover pointer-events-none"
             style="object-position: {{ post.get_cover_position() if mode == 'edit' else (form.cover_position.data or '50% 50%') }};"
           />
-          <div class="drag-overlay-guide">
-            <div class="drag-hint-pill">
-              <span class="drag-icon">✋</span> Nhấp giữ & kéo chuột trên ảnh để di chuyển vị trí
-            </div>
-            <div class="drag-crosshair"></div>
+          <div class="absolute inset-0 bg-black/20 flex items-center justify-center pointer-events-none">
+            <span class="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-white text-xs font-medium">
+              ✋ Nhấp giữ & kéo chuột để di chuyển khung hình
+            </span>
           </div>
         </div>
 
@@ -110,92 +115,122 @@
         {{ form.cover_position(id='cover_position', type='hidden') }}
 
         <!-- Quick Alignment Presets & Sliders -->
-        <div class="reposition-controls">
-          <div class="reposition-presets">
-            <span class="preset-label">Căn nhanh:</span>
-            <button type="button" class="preset-pill" onclick="setCoverPosition(50, 0)">⬆️ Trên cùng</button>
-            <button type="button" class="preset-pill active" id="preset-center" onclick="setCoverPosition(50, 50)">🎯 Chính giữa</button>
-            <button type="button" class="preset-pill" onclick="setCoverPosition(50, 100)">⬇️ Dưới cùng</button>
-            <button type="button" class="preset-pill" onclick="setCoverPosition(0, 50)">⬅️ Trái</button>
-            <button type="button" class="preset-pill" onclick="setCoverPosition(100, 50)">➡️ Phải</button>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 text-xs">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-slate-400 dark:text-slate-500 font-medium">Căn nhanh:</span>
+            <button type="button" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium cursor-pointer" onclick="setCoverPosition(50, 0)">⬆️ Trên</button>
+            <button type="button" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white font-medium cursor-pointer" id="preset-center" onclick="setCoverPosition(50, 50)">🎯 Giữa</button>
+            <button type="button" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium cursor-pointer" onclick="setCoverPosition(50, 100)">⬇️ Dưới</button>
+            <button type="button" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium cursor-pointer" onclick="setCoverPosition(0, 50)">⬅️ Trái</button>
+            <button type="button" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium cursor-pointer" onclick="setCoverPosition(100, 50)">➡️ Phải</button>
           </div>
 
-          <!-- Fine-tuning Range Sliders -->
-          <div class="sliders-row">
-            <div class="slider-group">
-              <label for="slider-y">Chiều dọc (Y): <span id="val-y">50%</span></label>
-              <input type="range" id="slider-y" min="0" max="100" value="50" class="position-slider" />
+          <!-- Range Sliders -->
+          <div class="flex items-center gap-4 text-slate-500 dark:text-slate-400">
+            <div class="flex items-center gap-1.5">
+              <span>Y: <strong id="val-y" class="text-slate-700 dark:text-slate-200">50%</strong></span>
+              <input type="range" id="slider-y" min="0" max="100" value="50" class="w-16 accent-blue-600" />
             </div>
-            <div class="slider-group">
-              <label for="slider-x">Chiều ngang (X): <span id="val-x">50%</span></label>
-              <input type="range" id="slider-x" min="0" max="100" value="50" class="position-slider" />
+            <div class="flex items-center gap-1.5">
+              <span>X: <strong id="val-x" class="text-slate-700 dark:text-slate-200">50%</strong></span>
+              <input type="range" id="slider-x" min="0" max="100" value="50" class="w-16 accent-blue-600" />
             </div>
           </div>
         </div>
+
+      </div>
+    </div>
+
+    <!-- ── Content Fields Card ── -->
+    <div class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-6 transition-colors">
+
+      <!-- Title -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between">
+          <label for="title" class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+            Tiêu đề bài viết <span class="text-red-500">*</span>
+          </label>
+          <span class="text-xs text-slate-400 dark:text-slate-500 font-mono" id="title-counter">0 / 200</span>
+        </div>
+        {{ form.title(class='w-full px-4 py-3 text-base sm:text-lg font-bold bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800/90 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition placeholder-slate-400 dark:placeholder-slate-500', id='title', placeholder='Nhập tiêu đề hấp dẫn...', maxlength=200) }}
+        {% for error in form.title.errors %}
+          <p class="text-xs text-red-500 font-medium">⚠️ {{ error }}</p>
+        {% endfor %}
       </div>
 
-    </div>
+      <!-- Category & Tags Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Category -->
+        <div class="space-y-1.5">
+          <label for="category" class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+            Danh mục chính <span class="text-red-500">*</span>
+          </label>
+          {{ form.category(class='w-full px-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800/90 transition', id='category') }}
+          {% for error in form.category.errors %}
+            <p class="text-xs text-red-500 font-medium">⚠️ {{ error }}</p>
+          {% endfor %}
+        </div>
 
-    <!-- Title -->
-    <div class="form-group">
-      {{ form.title.label(class='form-label') }}
-      {{ form.title(class='form-input', id='title', placeholder='Nhập tiêu đề hấp dẫn...', maxlength=200) }}
-      <div class="form-counter" id="title-counter">0 / 200</div>
-      {% for error in form.title.errors %}
-        <p class="field-error">⚠️ {{ error }}</p>
-      {% endfor %}
-    </div>
+        <!-- Additional Tags -->
+        <div class="space-y-1.5">
+          <label for="tags" class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+            Thẻ chủ đề (Tags)
+          </label>
+          {{ form.tags(class='w-full px-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800/90 transition placeholder-slate-400 dark:placeholder-slate-500', id='tags', placeholder='ví dụ: python, flask, react, web...') }}
+          {% for error in form.tags.errors %}
+            <p class="text-xs text-red-500 font-medium">⚠️ {{ error }}</p>
+          {% endfor %}
+        </div>
+      </div>
 
-    <!-- Category -->
-    <div class="form-group">
-      {{ form.category.label(class='form-label') }}
-      {{ form.category(class='form-select', id='category') }}
-      {% for error in form.category.errors %}
-        <p class="field-error">⚠️ {{ error }}</p>
-      {% endfor %}
-    </div>
+      <!-- Summary -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between">
+          <label for="summary" class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+            Tóm tắt ngắn gọn <span class="text-red-500">*</span>
+          </label>
+          <span class="text-xs text-slate-400 dark:text-slate-500 font-mono" id="summary-counter">0 / 400</span>
+        </div>
+        {{ form.summary(class='w-full px-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800/90 transition placeholder-slate-400 dark:placeholder-slate-500 leading-relaxed', id='summary', placeholder='Tóm tắt ngắn gọn nội dung bài viết (hiển thị trên trang chủ và mạng xã hội)...', rows=3, maxlength=400) }}
+        {% for error in form.summary.errors %}
+          <p class="text-xs text-red-500 font-medium">⚠️ {{ error }}</p>
+        {% endfor %}
+      </div>
 
-    <!-- Additional Tags -->
-    <div class="form-group">
-      {{ form.tags.label(class='form-label') }}
-      {{ form.tags(class='form-input', id='tags', placeholder='Ví dụ: python, flask, backend, web-development...') }}
-      <p class="form-hint">🏷️ Nhập các từ khóa liên quan phân cách bằng dấu phẩy. Danh mục chính sẽ tự động được thêm vào tags.</p>
-      {% for error in form.tags.errors %}
-        <p class="field-error">⚠️ {{ error }}</p>
-      {% endfor %}
-    </div>
+      <!-- Content -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between">
+          <label for="content" class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+            Nội dung bài viết (Markdown) <span class="text-red-500">*</span>
+          </label>
+          <span class="text-xs text-slate-400 dark:text-slate-500 font-mono" id="word-counter">0 từ • ~1 phút đọc</span>
+        </div>
+        <div class="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+          💡 Hỗ trợ cú pháp Markdown: **in đậm**, *in nghiêng*, ## Tiêu đề lớn, `code`, ```block code```, [liên kết](url)
+        </div>
+        {{ form.content(class='w-full p-4 text-sm font-mono bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-slate-800/90 transition placeholder-slate-400 dark:placeholder-slate-500 leading-relaxed', id='content', placeholder='Viết nội dung bài viết ở đây...', rows=16) }}
+        {% for error in form.content.errors %}
+          <p class="text-xs text-red-500 font-medium">⚠️ {{ error }}</p>
+        {% endfor %}
+      </div>
 
-    <!-- Summary -->
-    <div class="form-group">
-      {{ form.summary.label(class='form-label') }}
-      {{ form.summary(class='form-textarea', id='summary', placeholder='Tóm tắt ngắn gọn nội dung bài viết (hiển thị trên trang chủ)...', rows=3, maxlength=400) }}
-      <div class="form-counter" id="summary-counter">0 / 400</div>
-      {% for error in form.summary.errors %}
-        <p class="field-error">⚠️ {{ error }}</p>
-      {% endfor %}
-    </div>
+      <!-- Submit Footer -->
+      <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3">
+        <a href="{{ url_for('index') }}" class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-sm transition" id="cancel-btn">
+          Hủy bỏ
+        </a>
+        <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md hover:shadow-lg transition active:scale-95 cursor-pointer" id="submit-btn">
+          {% if mode == 'edit' %}💾 Lưu thay đổi{% else %}🚀 Xuất bản bài viết{% endif %}
+        </button>
+      </div>
 
-    <!-- Content -->
-    <div class="form-group">
-      {{ form.content.label(class='form-label') }}
-      <p class="form-hint">💡 Hỗ trợ Markdown cơ bản: **đậm**, *nghiêng*, ## Tiêu đề, \`code\`, \`\`\`code block\`\`\`</p>
-      {{ form.content(class='form-textarea', id='content', placeholder='Viết nội dung bài viết ở đây...', rows=18) }}
-      <div class="form-counter" id="word-counter">0 từ • ~1 phút đọc</div>
-    </div>
-
-    <!-- Footer -->
-    <div class="form-footer">
-      {{ form.submit(class='btn btn-primary btn-lg', id='submit-btn') }}
-      <a href="{{ url_for('index') }}" class="btn btn-ghost btn-lg" id="cancel-btn">Hủy bỏ</a>
     </div>
 
   </form>
 </div>
 
 <script>
-// ─────────────────────────────────────────────
-//  Tab Switching: File Upload vs URL
-// ─────────────────────────────────────────────
+// Tab Switching: File Upload vs URL
 function switchImageTab(tab) {
   const btnFile = document.getElementById('tab-btn-file');
   const btnUrl  = document.getElementById('tab-btn-url');
@@ -203,21 +238,23 @@ function switchImageTab(tab) {
   const paneUrl  = document.getElementById('pane-url');
 
   if (tab === 'file') {
-    btnFile.classList.add('active');
-    btnUrl.classList.remove('active');
+    btnFile.style.backgroundColor = '#2563eb';
+    btnFile.style.color = '#ffffff';
+    btnUrl.style.backgroundColor = 'transparent';
+    btnUrl.style.color = '#475569';
     paneFile.style.display = 'block';
     paneUrl.style.display = 'none';
   } else {
-    btnUrl.classList.add('active');
-    btnFile.classList.remove('active');
+    btnUrl.style.backgroundColor = '#2563eb';
+    btnUrl.style.color = '#ffffff';
+    btnFile.style.backgroundColor = 'transparent';
+    btnFile.style.color = '#475569';
     paneUrl.style.display = 'block';
     paneFile.style.display = 'none';
   }
 }
 
-// ─────────────────────────────────────────────
-//  Interactive Cover Studio & Reposition Logic
-// ─────────────────────────────────────────────
+// Interactive Cover Studio & Reposition Logic
 (function() {
   const fileInput   = document.getElementById('cover_file');
   const dropzone    = document.getElementById('cover-dropzone');
@@ -240,7 +277,6 @@ function switchImageTab(tab) {
   let startPosX, startPosY;
   let debounceTimer;
 
-  // Khởi tạo tọa độ từ input có sẵn
   if (posInput && posInput.value) {
     const parts = posInput.value.trim().split(/\s+/);
     if (parts.length >= 2) {
@@ -254,119 +290,117 @@ function switchImageTab(tab) {
     posY = Math.round(Math.max(0, Math.min(100, y)));
     const posStr = `${posX}% ${posY}%`;
     
-    img.style.objectPosition = posStr;
-    posInput.value = posStr;
-    badge.textContent = `📍 Vị trí: ${posStr}`;
+    if (img) img.style.objectPosition = posStr;
+    if (posInput) posInput.value = posStr;
+    if (badge) badge.textContent = `📍 Vị trí: ${posStr}`;
     
-    sliderX.value = posX;
-    sliderY.value = posY;
-    valX.textContent = `${posX}%`;
-    valY.textContent = `${posY}%`;
+    if (sliderX) sliderX.value = posX;
+    if (sliderY) sliderY.value = posY;
+    if (valX) valX.textContent = `${posX}%`;
+    if (valY) valY.textContent = `${posY}%`;
   }
 
   window.setCoverPosition = function(x, y) {
     updatePositionUI(x, y);
   };
 
-  // Slider events
-  sliderX.addEventListener('input', (e) => {
-    updatePositionUI(parseFloat(e.target.value), posY);
-  });
-  sliderY.addEventListener('input', (e) => {
-    updatePositionUI(posX, parseFloat(e.target.value));
-  });
+  if (sliderX) {
+    sliderX.addEventListener('input', (e) => {
+      updatePositionUI(parseFloat(e.target.value), posY);
+    });
+  }
+  if (sliderY) {
+    sliderY.addEventListener('input', (e) => {
+      updatePositionUI(posX, parseFloat(e.target.value));
+    });
+  }
 
-  // Mouse & Touch Dragging trên Viewport
-  viewport.addEventListener('mousedown', (e) => {
-    if (e.target === removeBtn) return;
-    isDragging = true;
-    viewport.classList.add('is-dragging');
-    startX = e.clientX;
-    startY = e.clientY;
-    startPosX = posX;
-    startPosY = posY;
-    e.preventDefault();
-  });
-
-  window.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    const rect = viewport.getBoundingClientRect();
-    const deltaX = ((e.clientX - startX) / rect.width) * 100;
-    const deltaY = ((e.clientY - startY) / rect.height) * 100;
-    
-    // Đảo dấu một cách tự nhiên (kéo xuống thì xem phần trên, kéo lên thì xem phần dưới)
-    updatePositionUI(startPosX - deltaX, startPosY - deltaY);
-  });
-
-  window.addEventListener('mouseup', () => {
-    if (isDragging) {
-      isDragging = false;
-      viewport.classList.remove('is-dragging');
-    }
-  });
-
-  // Touch Support for Mobile
-  viewport.addEventListener('touchstart', (e) => {
-    if (e.touches.length === 1) {
+  if (viewport) {
+    viewport.addEventListener('mousedown', (e) => {
+      if (e.target === removeBtn) return;
       isDragging = true;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
+      startX = e.clientX;
+      startY = e.clientY;
       startPosX = posX;
       startPosY = posY;
-    }
-  }, { passive: true });
-
-  window.addEventListener('touchmove', (e) => {
-    if (!isDragging || e.touches.length !== 1) return;
-    const rect = viewport.getBoundingClientRect();
-    const deltaX = ((e.touches[0].clientX - startX) / rect.width) * 100;
-    const deltaY = ((e.touches[0].clientY - startY) / rect.height) * 100;
-    updatePositionUI(startPosX - deltaX, startPosY - deltaY);
-  }, { passive: true });
-
-  window.addEventListener('touchend', () => {
-    isDragging = false;
-  });
-
-  // File Upload Preview
-  fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        img.src = ev.target.result;
-        studioWrap.style.display = 'block';
-        updatePositionUI(50, 50);
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-
-  // Drag & drop dropzone
-  ['dragenter', 'dragover'].forEach(eventName => {
-    dropzone.addEventListener(eventName, (e) => {
       e.preventDefault();
-      dropzone.classList.add('dropzone-dragover');
     });
-  });
 
-  ['dragleave', 'drop'].forEach(eventName => {
-    dropzone.addEventListener(eventName, (e) => {
-      e.preventDefault();
-      dropzone.classList.remove('dropzone-dragover');
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const rect = viewport.getBoundingClientRect();
+      const deltaX = ((e.clientX - startX) / rect.width) * 100;
+      const deltaY = ((e.clientY - startY) / rect.height) * 100;
+      updatePositionUI(startPosX - deltaX, startPosY - deltaY);
     });
-  });
 
-  dropzone.addEventListener('drop', (e) => {
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      fileInput.files = files;
-      const event = new Event('change', { bubbles: true });
-      fileInput.dispatchEvent(event);
-    }
-  });
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
 
-  // URL Input Preview
+    viewport.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startPosX = posX;
+        startPosY = posY;
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!isDragging || e.touches.length !== 1) return;
+      const rect = viewport.getBoundingClientRect();
+      const deltaX = ((e.touches[0].clientX - startX) / rect.width) * 100;
+      const deltaY = ((e.touches[0].clientY - startY) / rect.height) * 100;
+      updatePositionUI(startPosX - deltaX, startPosY - deltaY);
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          if (img) img.src = ev.target.result;
+          if (studioWrap) studioWrap.style.display = 'block';
+          updatePositionUI(50, 50);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  if (dropzone) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('border-blue-500', 'bg-blue-50');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('border-blue-500', 'bg-blue-50');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0 && fileInput) {
+        fileInput.files = files;
+        const event = new Event('change', { bubbles: true });
+        fileInput.dispatchEvent(event);
+      }
+    });
+  }
+
   function normalizeImageUrl(rawUrl) {
     if (!rawUrl) return '';
     let url = rawUrl.trim();
@@ -385,43 +419,47 @@ function switchImageTab(tab) {
   function showPreviewUrl(rawUrl) {
     const url = normalizeImageUrl(rawUrl);
     if (!url) {
-      if (!fileInput.files.length) {
+      if (fileInput && !fileInput.files.length && studioWrap) {
         studioWrap.style.display = 'none';
-        img.src = '';
+        if (img) img.src = '';
       }
       return;
     }
-    img.onload = () => {
-      studioWrap.style.display = 'block';
-      if (url !== rawUrl && urlInput.value.trim() === rawUrl) {
-        urlInput.value = url;
-      }
-    };
-    img.onerror = () => {
-      if (!fileInput.files.length) studioWrap.style.display = 'none';
-    };
-    img.src = url;
+    if (img) {
+      img.onload = () => {
+        if (studioWrap) studioWrap.style.display = 'block';
+        if (url !== rawUrl && urlInput && urlInput.value.trim() === rawUrl) {
+          urlInput.value = url;
+        }
+      };
+      img.onerror = () => {
+        if (fileInput && !fileInput.files.length && studioWrap) studioWrap.style.display = 'none';
+      };
+      img.src = url;
+    }
   }
 
-  urlInput.addEventListener('input', () => {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => showPreviewUrl(urlInput.value.trim()), 400);
-  });
+  if (urlInput) {
+    urlInput.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => showPreviewUrl(urlInput.value.trim()), 400);
+    });
+  }
 
-  // Remove Cover Button
-  removeBtn.addEventListener('click', () => {
-    urlInput.value = '';
-    fileInput.value = '';
-    studioWrap.style.display = 'none';
-    img.src = '';
-    posInput.value = '50% 50%';
-  });
+  if (removeBtn) {
+    removeBtn.addEventListener('click', () => {
+      if (urlInput) urlInput.value = '';
+      if (fileInput) fileInput.value = '';
+      if (studioWrap) studioWrap.style.display = 'none';
+      if (img) img.src = '';
+      if (posInput) posInput.value = '50% 50%';
+    });
+  }
 
-  // Khởi tạo trạng thái ban đầu
   updatePositionUI(posX, posY);
-  if (img.src && img.src.trim().length > 0 && !img.src.endsWith('/')) {
-    studioWrap.style.display = 'block';
-  } else if (urlInput.value.trim()) {
+  if (img && img.src && img.src.trim().length > 0 && !img.src.endsWith('/')) {
+    if (studioWrap) studioWrap.style.display = 'block';
+  } else if (urlInput && urlInput.value.trim()) {
     showPreviewUrl(urlInput.value.trim());
   }
 })();
