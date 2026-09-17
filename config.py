@@ -11,11 +11,6 @@ COVERS_FOLDER = os.path.join(UPLOAD_FOLDER, 'covers')
 AVATARS_FOLDER = os.path.join(UPLOAD_FOLDER, 'avatars')
 DB_PATH = os.path.join(INSTANCE_DIR, 'blog.db')
 
-# Đảm bảo các thư mục tồn tại
-os.makedirs(INSTANCE_DIR, exist_ok=True)
-os.makedirs(COVERS_FOLDER, exist_ok=True)
-os.makedirs(AVATARS_FOLDER, exist_ok=True)
-
 
 def normalize_database_url(url):
     """
