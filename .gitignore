@@ -1,1 +1,36 @@
+# Environment & Secrets
 .env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Database & Instances
+instance/
+*.db
+*.sqlite3
+
+# Node & Dependencies
+node_modules/
+npm-debug.log*
+
+# Uploaded media
+static/uploads/*
+!static/uploads/covers/
+!static/uploads/avatars/
+!static/uploads/covers/.gitkeep
+!static/uploads/avatars/.gitkeep
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
