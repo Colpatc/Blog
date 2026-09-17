@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from sqlalchemy.pool import NullPool
 
 # Tải biến môi trường từ file .env nếu có
 load_dotenv()
@@ -21,7 +22,16 @@ def normalize_database_url(url):
     if url and url.startswith("postgres://"):
         return url.replace("postgres://", "postgresql://", 1)
     return url
+    
+class ProductionConfig(Config):
+    """Môi trường Triển khai thực tế."""
 
+    DEBUG = False
+
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'poolclass': NullPool,
+        'pool_pre_ping': True,
+    }
 
 class Config:
     """Cấu hình cơ sở (Base Configuration)."""
