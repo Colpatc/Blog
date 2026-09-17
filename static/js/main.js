@@ -835,17 +835,26 @@ function setupSocialShareButtons() {
    ═══════════════════════════════════════════════════════════ */
 
 /**
- * Tự động tạo Table of Contents từ các heading h2, h3 trong bài viết
+ * Tự động tạo Table of Contents từ các heading h1-h6 trong bài viết
  */
 function setupTableOfContents() {
   const content = document.getElementById('post-content');
-  const tocWrapper = document.getElementById('post-toc-wrapper');
-  const tocNav = document.getElementById('toc-nav');
-  const tocToggleBtn = document.getElementById('toc-toggle-btn');
-  if (!content || !tocWrapper || !tocNav) return;
+  if (!content) return;
 
-  const headings = content.querySelectorAll('h2, h3');
-  if (headings.length < 2) return; // Chỉ hiện TOC nếu có ít nhất 2 headings
+  const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  const desktopWrapper = document.getElementById('post-toc-wrapper');
+  const desktopNav = document.getElementById('toc-nav');
+  const desktopToggleBtn = document.getElementById('toc-toggle-btn');
+
+  const mobileWrapper = document.getElementById('post-toc-mobile');
+  const mobileNav = document.getElementById('toc-nav-mobile');
+  const mobileToggleBtn = document.getElementById('toc-mobile-toggle-btn');
+
+  if (headings.length < 1) {
+    if (desktopWrapper) desktopWrapper.style.display = 'none';
+    if (mobileWrapper) mobileWrapper.style.display = 'none';
+    return;
+  }
 
   // Tạo ID cho mỗi heading nếu chưa có
   const tocItems = [];
@@ -856,24 +865,44 @@ function setupTableOfContents() {
     tocItems.push({ id: h.id, text: h.textContent.trim(), level: h.tagName });
   });
 
-  // Build TOC HTML
-  let html = '<ol style="padding-left:0;list-style:none;margin:0;">';
-  tocItems.forEach(item => {
-    const cls = item.level === 'H3' ? 'toc-h3' : '';
-    html += `<li class="${cls}"><a href="#${item.id}" class="toc-link">${item.text}</a></li>`;
-  });
-  html += '</ol>';
-  tocNav.innerHTML = html;
-  tocWrapper.style.display = 'block';
+  // Build TOC HTML helper
+  const buildTocHtml = () => {
+    let html = '<ol class="space-y-1 list-none p-0 m-0">';
+    tocItems.forEach(item => {
+      const isSub = ['H3', 'H4', 'H5', 'H6'].includes(item.level);
+      const pl = isSub ? 'pl-3.5 text-xs text-slate-500 dark:text-slate-400' : 'font-semibold text-xs sm:text-sm text-slate-700 dark:text-slate-200';
+      html += `<li class="${pl}"><a href="#${item.id}" class="toc-link block py-1.5 px-2.5 rounded-lg hover:text-blue-600 dark:hover:text-sky-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/70 transition truncate">${item.text}</a></li>`;
+    });
+    html += '</ol>';
+    return html;
+  };
+
+  const html = buildTocHtml();
+
+  // Desktop render
+  if (desktopWrapper && desktopNav) {
+    desktopNav.innerHTML = html;
+    desktopWrapper.style.display = 'block';
+  }
+
+  // Mobile render
+  if (mobileWrapper && mobileNav) {
+    mobileNav.innerHTML = html;
+    mobileWrapper.style.display = 'block';
+  }
 
   // Smooth scroll
-  tocNav.querySelectorAll('.toc-link').forEach(link => {
+  document.querySelectorAll('.toc-link').forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
-      const target = document.getElementById(link.getAttribute('href').slice(1));
+      const targetId = link.getAttribute('href').slice(1);
+      const target = document.getElementById(targetId);
       if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        history.replaceState(null, '', link.getAttribute('href'));
+        // Offset for sticky navbar (64px) + margin
+        const yOffset = -80;
+        const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+        history.replaceState(null, '', '#' + targetId);
       }
     });
   });
@@ -882,23 +911,30 @@ function setupTableOfContents() {
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       const id = entry.target.id;
-      const link = tocNav.querySelector(`.toc-link[href="#${id}"]`);
-      if (!link) return;
       if (entry.isIntersecting) {
-        tocNav.querySelectorAll('.toc-link').forEach(l => l.classList.remove('toc-active'));
-        link.classList.add('toc-active');
+        document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('toc-active'));
+        document.querySelectorAll(`.toc-link[href="#${id}"]`).forEach(l => l.classList.add('toc-active'));
       }
     });
-  }, { rootMargin: '-10% 0px -80% 0px', threshold: 0 });
+  }, { rootMargin: '-10% 0px -75% 0px', threshold: 0 });
 
   headings.forEach(h => observer.observe(h));
 
-  // Toggle collapse
-  if (tocToggleBtn) {
-    tocToggleBtn.addEventListener('click', () => {
-      const isCollapsed = tocNav.classList.toggle('collapsed');
-      tocToggleBtn.classList.toggle('collapsed', isCollapsed);
-      tocToggleBtn.title = isCollapsed ? 'Mo rong muc luc' : 'Thu gon muc luc';
+  // Toggle collapse Desktop
+  if (desktopToggleBtn && desktopNav) {
+    desktopToggleBtn.addEventListener('click', () => {
+      const isHidden = desktopNav.classList.toggle('hidden');
+      desktopToggleBtn.querySelector('.toc-arrow')?.classList.toggle('rotate-180', isHidden);
+      desktopToggleBtn.title = isHidden ? 'Mở rộng mục lục' : 'Thu gọn mục lục';
+    });
+  }
+
+  // Toggle collapse Mobile
+  if (mobileToggleBtn && mobileNav) {
+    mobileToggleBtn.addEventListener('click', () => {
+      const isHidden = mobileNav.classList.toggle('hidden');
+      mobileToggleBtn.querySelector('.toc-mobile-arrow')?.classList.toggle('rotate-180', !isHidden);
+      mobileToggleBtn.setAttribute('aria-expanded', !isHidden);
     });
   }
 }

@@ -1,0 +1,80 @@
+/* ═══════════════════════════════════════════════════════════
+   PAGINATION (PHÂN TRANG THÔNG MINH)
+   ═══════════════════════════════════════════════════════════ */
+
+.pagination-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.pagination-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition);
+}
+
+.pagination-btn:hover:not(.pagination-disabled) {
+  background: rgba(124, 106, 247, 0.15);
+  border-color: rgba(124, 106, 247, 0.4);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.pagination-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pagination-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all var(--transition);
+}
+
+.pagination-number:hover {
+  background: rgba(124, 106, 247, 0.15);
+  border-color: rgba(124, 106, 247, 0.35);
+  color: var(--text-primary);
+}
+
+.pagination-number.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #fff;
+  box-shadow: 0 4px 15px var(--accent-glow);
+}
+
+.pagination-ellipsis {
+  padding: 0 0.3rem;
+  color: var(--text-muted);
+}

@@ -2,7 +2,11 @@ Flask==3.0.3
 Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.1
 Flask-Login==0.6.3
+Flask-Mail==0.10.0
 WTForms==3.1.2
 email-validator==2.1.1
 Markdown>=3.5.0
-
+bleach>=6.1.0
+python-dotenv>=1.0.1
+psycopg2-binary>=2.9.9
+APScheduler>=3.10.0

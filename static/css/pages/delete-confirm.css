@@ -1,0 +1,70 @@
+/* ════════ DELETE CONFIRM ════════ */
+.delete-page {
+  max-width: 520px;
+  margin: 6rem auto;
+  padding: 0 1.5rem;
+  text-align: center;
+}
+
+.delete-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: var(--radius-xl);
+  padding: 3rem 2.5rem;
+}
+
+.delete-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  display: block;
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+
+  25% {
+    transform: rotate(-8deg);
+  }
+
+  75% {
+    transform: rotate(8deg);
+  }
+}
+
+.delete-card h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 0.7rem;
+  color: var(--accent-red);
+}
+
+.delete-card p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  margin-bottom: 0.5rem;
+}
+
+.delete-title-preview {
+  font-style: italic;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 1rem 0;
+  padding: 0.8rem 1.2rem;
+  background: rgba(248, 113, 113, 0.07);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(248, 113, 113, 0.15);
+}
+
+.delete-actions {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-top: 2rem;
+}

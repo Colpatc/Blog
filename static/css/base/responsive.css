@@ -1,0 +1,42 @@
+/* ════════ RESPONSIVE ════════ */
+@media (max-width: 640px) {
+  .hero {
+    padding: 3rem 1.5rem 2rem;
+  }
+
+  .hero-stats {
+    gap: 1.5rem;
+  }
+
+  .posts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .post-meta-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+
+  .post-actions {
+    margin-left: 0;
+  }
+
+  .blog-form {
+    padding: 1.5rem;
+  }
+
+  .form-footer {
+    flex-direction: column;
+  }
+
+  .delete-actions {
+    flex-direction: column;
+  }
+
+  .flash-container {
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
+  }
+}

@@ -276,22 +276,33 @@ class Post(db.Model):
         return minutes
 
     def get_cover_image(self):
-        """Trả về URL hợp lệ của ảnh bìa (tự động chuẩn hóa nếu dán nhầm link web thay vì link ảnh trực tiếp)."""
-        if not self.cover_image or not self.cover_image.strip():
-            return None
-        url = self.cover_image.strip()
-        # Nếu đã là link ảnh trực tiếp
-        if url.startswith(('http://', 'https://')):
-            if 'images.unsplash.com' in url or any(url.lower().endswith(ext) for ext in ('.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg')):
-                return url
-            # Xử lý trường hợp dán link trang Unsplash (VD: https://unsplash.com/photos/...-aB6xfq-sGcU)
-            if 'unsplash.com' in url:
-                clean_url = url.split('?')[0].rstrip('/')
-                last_part = clean_url.split('/')[-1]
-                photo_id = last_part.split('-')[-1]
-                if photo_id:
-                    return f"https://images.unsplash.com/photo-{photo_id}?auto=format&fit=crop&w=1200&q=80"
-        return url
+        """Trả về URL hợp lệ của ảnh bìa (tự động chuẩn hóa hoặc trích xuất ảnh đầu tiên từ nội dung bài viết gốc)."""
+        if self.cover_image and self.cover_image.strip():
+            url = self.cover_image.strip()
+            # Nếu đã là link ảnh trực tiếp
+            if url.startswith(('http://', 'https://')):
+                if 'images.unsplash.com' in url or any(url.lower().endswith(ext) for ext in ('.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg')):
+                    return url
+                # Xử lý trường hợp dán link trang Unsplash
+                if 'unsplash.com' in url:
+                    clean_url = url.split('?')[0].rstrip('/')
+                    last_part = clean_url.split('/')[-1]
+                    photo_id = last_part.split('-')[-1]
+                    if photo_id:
+                        return f"https://images.unsplash.com/photo-{photo_id}?auto=format&fit=crop&w=1200&q=80"
+            return url
+
+        # Tự động lấy ảnh đầu tiên trong nội dung bài viết (Markdown hoặc HTML)
+        if self.content:
+            import re
+            md_match = re.search(r'!\[.*?\]\((https?://[^\s\)]+|/[^\s\)]+)\)', self.content)
+            if md_match:
+                return md_match.group(1)
+            html_match = re.search(r'<img[^>]+src=["\'](https?://[^"\']+|/[^"\']+)["\']', self.content)
+            if html_match:
+                return html_match.group(1)
+
+        return None
 
     def get_cover_position(self):
         """Trả về CSS object-position an toàn cho ảnh bìa (mặc định 50% 50%)."""
